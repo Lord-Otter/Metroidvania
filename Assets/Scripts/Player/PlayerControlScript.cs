@@ -1,23 +1,36 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerControlScript : MonoBehaviour
 {
-    public float moveSpeed = 20f;
-    public float jumpForce = 10f;         // Force for a light jump (tap)
-    public float maxHoldJumpForce = 20f;  // Maximum force for holding the jump key
-    public float jumpCancelForce = 10f;   // Force to cancel upward motion when releasing jump
-    private float jumpHoldTime = 0f;      // Timer for how long the space key is held
-    private bool isJumping = false;       // Whether the player is jumping
-    private bool isJumpCanceled = false;  // Whether the jump is canceled
+    public float maxMoveSpeed;
+    public float moveAcceleration;
+    public float airControl;
+    public float maxAirMoveSpeed;
+    public float jumpForce;
+    public float jumpCancelForce;
+    public float rotationSpeed;
+
+    //Physics
+    public float gravity;
+    public float horizontalAirDrag;
+    public float horizontalGroundDrag;
+    public float jumpFallDelay;
+
+    public float maxFallSpeed;
     private Rigidbody rigidBody;
+    private new Transform transform;
     private GameObject player;
 
     // Start is called before the first frame update
     void Start()
     {
         rigidBody = GetComponent<Rigidbody>();
+        transform = GetComponent<Transform>();
         player = gameObject;
     }
 
@@ -30,80 +43,136 @@ public class PlayerControlScript : MonoBehaviour
     private void FixedUpdate()
     {
         Movement();
-        if (IsGroundedCheck())
-        {
-            isJumping = false; // Allow jumping again when grounded
-            isJumpCanceled = false; // Reset jump cancel flag
-            jumpHoldTime = 0f; // Reset jump hold time when grounded
-        }
     }
 
     void Movement()
     {
         Vector3 movement = Vector3.zero;
+        Vector3 velocity = rigidBody.velocity;
 
-        // Check if player is grounded
+        bool isFacingRight = true;
+
         if (gameObject.name == "Player")
         {
-            // Light tap for jump
-            if (IsGroundedCheck() && Input.GetKeyDown(KeyCode.Space) && !isJumping)
+            //Movement
+            if (Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A))
             {
-                isJumping = true;
-                StartCoroutine(HighJumpCheck()); // Start coroutine to check for holding jump
-                rigidBody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse); // Light jump on tap
+                isFacingRight = true;
+                if (!IsGroundedCheck() && velocity.x < maxAirMoveSpeed)
+                {
+                    velocity.x += 1f * airControl;
+                }
+                else
+                {
+                    movement.x = 1f;
+                }
+            }
+            else if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D))
+            {
+                isFacingRight = false;
+                if (!IsGroundedCheck() && velocity.x > -maxAirMoveSpeed)
+                {
+                    velocity.x -= 1f * airControl;
+                }
+                else
+                {                                       
+                    movement.x = -1f;                   
+                }
+            }
+            
+
+            if (IsGroundedCheck())
+            {
+                if (velocity.x < maxMoveSpeed && velocity.x > -maxMoveSpeed)
+                {
+                    velocity.x += movement.x * moveAcceleration;
+                }
+
+                if (velocity.x > 0)
+                {
+                    velocity.x -= horizontalGroundDrag;
+                    if(horizontalGroundDrag > velocity.x)
+                    {
+                        velocity.x = 0;
+                    }
+                }
+                else if (velocity.x < 0)
+                {
+                    velocity.x += horizontalGroundDrag;
+                    if(-horizontalGroundDrag < velocity.x)
+                    {
+                        velocity.x = 0;
+                    }
+                }
+                
             }
 
-            // If space is held and the player is in the air
-            if (!IsGroundedCheck() && Input.GetKey(KeyCode.Space) && !isJumpCanceled)
+            //Jump
+            if (Input.GetKeyDown(KeyCode.Space) && IsGroundedCheck())
             {
-                jumpHoldTime += Time.fixedDeltaTime; // Track how long the key is held down
+                velocity.y = jumpForce;
+            }            
+            if (!Input.GetKey(KeyCode.Space) && !IsGroundedCheck() && velocity.y > 0)
+            {
+                velocity.y -= 1f * jumpCancelForce;
 
-                // Apply a gradual higher jump force based on how long the player holds the space key
-                if (jumpHoldTime < 1f) // Optional: limit the max time the jump can be held
+                if (velocity.y < 3)
                 {
-                    rigidBody.AddForce(Vector3.up * maxHoldJumpForce * Time.fixedDeltaTime, ForceMode.VelocityChange);
+                    velocity.y += jumpFallDelay;
                 }
             }
 
-            // Jump cancel when space is released or after a certain condition
-            if (!Input.GetKey(KeyCode.Space) && rigidBody.velocity.y > 0 && !IsGroundedCheck())
+            if (!IsGroundedCheck())
             {
-                // Cancel upward velocity when player releases the space key early
-                rigidBody.AddForce(Vector3.down * jumpCancelForce, ForceMode.Force);
-                isJumpCanceled = true;
+                if (velocity.y > -maxFallSpeed)
+                {                    
+                    velocity.y -= gravity * Time.fixedDeltaTime;                    
+                }
+
+                if(velocity.x > 0 && !Input.GetKey(KeyCode.D) || velocity.x > 0 && Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.A))
+                {
+                    velocity.x -= horizontalAirDrag;
+                }
+                else if(velocity.x < 0 && !Input.GetKey(KeyCode.A) || velocity.x < 0 && Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.A))
+                {
+                    velocity.x += horizontalAirDrag;
+                }
             }
 
-            // Reset jump cancel if grounded
-            if (IsGroundedCheck())
-            {
-                isJumpCanceled = false;
-                jumpHoldTime = 0f; // Reset jump hold time when grounded
-            }
+            rigidBody.velocity = velocity;
 
-            // Horizontal movement (left and right)
-            if (Input.GetKey(KeyCode.A))
-            {
-                movement.x = -1f;
-            }
-            else if (Input.GetKey(KeyCode.D))
-            {
-                movement.x = 1f;
-            }
+            FaceTravelDirection(isFacingRight);
         }
-
-        // Apply force to move the player horizontally
-        rigidBody.AddForce(movement * moveSpeed, ForceMode.Force);
     }
 
-    IEnumerator HighJumpCheck()
+
+    //WORK IN PROGRESS-----------------------------------------------------------------------------------
+    void FaceTravelDirection(bool isFacingRight)
     {
-        yield return new WaitForSeconds(0.2f); // Small delay to allow for holding space
-        if (Input.GetKey(KeyCode.Space))
+        Vector3 angularVelocity = rigidBody.angularVelocity;
+        float yRotation = transform.eulerAngles.y;
+
+        if (isFacingRight && yRotation > 0)
         {
-            // Player is holding the space key longer, you can trigger higher jump logic here
-            isJumping = true;
+            angularVelocity.y = -rotationSpeed; // Rotate in the opposite direction for right-facing
         }
+        else if(!isFacingRight && transform.eulerAngles.y < 180)
+        {
+            rigidBody.constraints &= ~RigidbodyConstraints.FreezeRotationY;
+            angularVelocity.y = rotationSpeed;  // Rotate in the regular direction for left-facing
+            if(yRotation == 180)
+            {
+                rigidBody.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }else if(yRotation + rotationSpeed > 180)
+            {
+                yRotation = 180;
+                rigidBody.constraints |= RigidbodyConstraints.FreezeRotationY;
+            }
+        }
+
+        rigidBody.angularVelocity = angularVelocity;
     }
+
 
     bool IsGroundedCheck()
     {
