@@ -7,12 +7,22 @@ using UnityEngine;
 
 public class PlayerControlScript : MonoBehaviour
 {
+    //Running
     public float maxMoveSpeed;
     public float moveAcceleration;
     public float airControl;
     public float maxAirMoveSpeed;
+
+    //Jumping
     public float jumpForce;
     public float jumpCancelForce;
+    public int maxAirJumps;
+    [SerializeField] private int airJumps;
+    public bool canGroundJump = true;
+    private float airTimeStart;
+    public float jumpGracePeriod;
+
+
     public float rotationSpeed;
 
     //Physics
@@ -20,8 +30,8 @@ public class PlayerControlScript : MonoBehaviour
     public float horizontalAirDrag;
     public float horizontalGroundDrag;
     public float jumpFallDelay;
-
     public float maxFallSpeed;
+
     private Rigidbody rigidBody;
     private new Transform transform;
     private GameObject player;
@@ -32,12 +42,13 @@ public class PlayerControlScript : MonoBehaviour
         rigidBody = GetComponent<Rigidbody>();
         transform = GetComponent<Transform>();
         player = gameObject;
+        airJumps = maxAirJumps;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        //LÄGG IN CONTROLLERS HÄR OCH FÅ DOM ATT ÄNDRA EN BOOL ISTÄLLET!!!!
     }
 
     private void FixedUpdate()
@@ -47,6 +58,8 @@ public class PlayerControlScript : MonoBehaviour
 
     void Movement()
     {
+        //Efteråt ändra koden så den slutar kollar mark collison flera gånger i onödan.
+
         Vector3 movement = Vector3.zero;
         Vector3 velocity = rigidBody.velocity;
 
@@ -107,11 +120,38 @@ public class PlayerControlScript : MonoBehaviour
                 
             }
 
-            //Jump
-            if (Input.GetKeyDown(KeyCode.Space) && IsGroundedCheck())
+            //Jump Grace Period
+            if (IsGroundedCheck())
             {
+                airTimeStart = 0f;
+                canGroundJump = true;
+            }
+            else
+            {
+                if (airTimeStart == 0f)
+                {
+                    airTimeStart = Time.time;
+                }
+
+                if (Time.time - airTimeStart >= jumpGracePeriod)
+                {
+                    canGroundJump = false;
+                }
+            }
+
+            //Jump
+            if (Input.GetKeyDown(KeyCode.Space) && canGroundJump)
+            {
+                canGroundJump = false;
                 velocity.y = jumpForce;
-            }            
+            }
+            if (Input.GetKeyDown(KeyCode.Space) && !IsGroundedCheck() && !canGroundJump && airJumps > 0)
+            {
+                canGroundJump = false;
+                airJumps--;
+                velocity.y = jumpForce;
+                Debug.Log("DOUBLE JUMP!!");
+            }
             if (!Input.GetKey(KeyCode.Space) && !IsGroundedCheck() && velocity.y > 0)
             {
                 velocity.y -= 1f * jumpCancelForce;
@@ -141,13 +181,13 @@ public class PlayerControlScript : MonoBehaviour
 
             rigidBody.velocity = velocity;
 
-            FaceTravelDirection(isFacingRight);
+            //FaceTravelDirection(isFacingRight);
         }
     }
 
 
     //WORK IN PROGRESS-----------------------------------------------------------------------------------
-    void FaceTravelDirection(bool isFacingRight)
+    /*void FaceTravelDirection(bool isFacingRight)
     {
         Vector3 angularVelocity = rigidBody.angularVelocity;
         float yRotation = transform.eulerAngles.y;
@@ -171,7 +211,7 @@ public class PlayerControlScript : MonoBehaviour
         }
 
         rigidBody.angularVelocity = angularVelocity;
-    }
+    }*/
 
 
     bool IsGroundedCheck()
