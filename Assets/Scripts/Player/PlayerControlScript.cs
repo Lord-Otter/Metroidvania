@@ -7,6 +7,13 @@ using UnityEngine;
 
 public class PlayerControlScript : MonoBehaviour
 {
+    //Controlls
+    [SerializeField] private bool movingRight = false;
+    [SerializeField] private bool movingLeft = false;
+    [SerializeField] private bool jumping = false;
+    [SerializeField] private bool highJumping = false;
+    [SerializeField] private bool airJumping = false;
+
     //Running
     public float maxMoveSpeed;
     public float moveAcceleration;
@@ -15,6 +22,7 @@ public class PlayerControlScript : MonoBehaviour
 
     //Jumping
     public float jumpForce;
+    public float airJumpForce;
     public float jumpCancelForce;
     public int maxAirJumps;
     [SerializeField] private int airJumps;
@@ -29,7 +37,7 @@ public class PlayerControlScript : MonoBehaviour
     public float gravity;
     public float horizontalAirDrag;
     public float horizontalGroundDrag;
-    public float jumpFallDelay;
+    //public float jumpFallDelay;
     public float maxFallSpeed;
 
     private Rigidbody rigidBody;
@@ -48,7 +56,7 @@ public class PlayerControlScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //LÄGG IN CONTROLLERS HÄR OCH FÅ DOM ATT ÄNDRA EN BOOL ISTÄLLET!!!!
+        Controls();
     }
 
     private void FixedUpdate()
@@ -56,133 +64,81 @@ public class PlayerControlScript : MonoBehaviour
         Movement();
     }
 
+    void Controls()
+    {
+        movingRight = Input.GetKey(KeyCode.D);
+        movingLeft = Input.GetKey(KeyCode.A);
+        
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (canGroundJump)
+            {
+                jumping = true;
+            }
+            else if (!IsGroundedCheck() && airJumps > 0)
+            {
+                airJumping = true;
+            }
+        }
+        
+        highJumping = Input.GetKey(KeyCode.Space);
+    }
+
     void Movement()
     {
-        //Efteråt ändra koden så den slutar kollar mark collison flera gånger i onödan.
-
-        Vector3 movement = Vector3.zero;
         Vector3 velocity = rigidBody.velocity;
 
-        bool isFacingRight = true;
-
-        if (gameObject.name == "Player")
+        if (IsGroundedCheck())
         {
-            //Movement
-            if (Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A))
-            {
-                isFacingRight = true;
-                if (!IsGroundedCheck() && velocity.x < maxAirMoveSpeed)
-                {
-                    velocity.x += 1f * airControl;
-                }
-                else
-                {
-                    movement.x = 1f;
-                }
-            }
-            else if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D))
-            {
-                isFacingRight = false;
-                if (!IsGroundedCheck() && velocity.x > -maxAirMoveSpeed)
-                {
-                    velocity.x -= 1f * airControl;
-                }
-                else
-                {                                       
-                    movement.x = -1f;                   
-                }
-            }
-            
-
-            if (IsGroundedCheck())
-            {
-                if (velocity.x < maxMoveSpeed && velocity.x > -maxMoveSpeed)
-                {
-                    velocity.x += movement.x * moveAcceleration;
-                }
-
-                if (velocity.x > 0)
-                {
-                    velocity.x -= horizontalGroundDrag;
-                    if(horizontalGroundDrag > velocity.x)
-                    {
-                        velocity.x = 0;
-                    }
-                }
-                else if (velocity.x < 0)
-                {
-                    velocity.x += horizontalGroundDrag;
-                    if(-horizontalGroundDrag < velocity.x)
-                    {
-                        velocity.x = 0;
-                    }
-                }
-                
-            }
-
-            //Jump Grace Period
-            if (IsGroundedCheck())
-            {
-                airTimeStart = 0f;
-                canGroundJump = true;
-            }
-            else
-            {
-                if (airTimeStart == 0f)
-                {
-                    airTimeStart = Time.time;
-                }
-
-                if (Time.time - airTimeStart >= jumpGracePeriod)
-                {
-                    canGroundJump = false;
-                }
-            }
-
-            //Jump
-            if (Input.GetKeyDown(KeyCode.Space) && canGroundJump)
-            {
-                canGroundJump = false;
-                velocity.y = jumpForce;
-            }
-            if (Input.GetKeyDown(KeyCode.Space) && !IsGroundedCheck() && !canGroundJump && airJumps > 0)
-            {
-                canGroundJump = false;
-                airJumps--;
-                velocity.y = jumpForce;
-                Debug.Log("DOUBLE JUMP!!");
-            }
-            if (!Input.GetKey(KeyCode.Space) && !IsGroundedCheck() && velocity.y > 0)
-            {
-                velocity.y -= 1f * jumpCancelForce;
-
-                if (velocity.y < 3)
-                {
-                    velocity.y += jumpFallDelay;
-                }
-            }
-
-            if (!IsGroundedCheck())
-            {
-                if (velocity.y > -maxFallSpeed)
-                {                    
-                    velocity.y -= gravity * Time.fixedDeltaTime;                    
-                }
-
-                if(velocity.x > 0 && !Input.GetKey(KeyCode.D) || velocity.x > 0 && Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.A))
-                {
-                    velocity.x -= horizontalAirDrag;
-                }
-                else if(velocity.x < 0 && !Input.GetKey(KeyCode.A) || velocity.x < 0 && Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.A))
-                {
-                    velocity.x += horizontalAirDrag;
-                }
-            }
-
-            rigidBody.velocity = velocity;
-
-            //FaceTravelDirection(isFacingRight);
+            airTimeStart = Time.time;
+            canGroundJump = true;
+            airJumps = maxAirJumps;
         }
+        else if (Time.time - airTimeStart >= jumpGracePeriod)
+        {
+            canGroundJump = false;
+        }
+
+        // Movement
+        float targetSpeed = movingRight ? maxMoveSpeed : movingLeft ? -maxMoveSpeed : 0;
+        float acceleration = IsGroundedCheck() ? moveAcceleration : airControl;
+        velocity.x = Mathf.MoveTowards(velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+
+        // Drag application
+        if (!movingRight && !movingLeft)
+        {
+            float drag = IsGroundedCheck() ? horizontalGroundDrag : horizontalAirDrag;
+            velocity.x = Mathf.MoveTowards(velocity.x, 0, drag * Time.fixedDeltaTime);
+        }
+
+        // Jumping
+        if (jumping)
+        {
+            velocity.y = jumpForce;
+            jumping = false;
+            canGroundJump = false;
+        }
+        else if (airJumping)
+        {
+            airJumps--;
+            velocity.y = airJumpForce;
+            airJumping = false;
+        }
+
+        // Jump canceling
+        if (!highJumping && velocity.y > 0)
+        {
+            velocity.y = Mathf.Max(velocity.y - jumpCancelForce * Time.fixedDeltaTime, 0);
+        }
+
+        // Apply gravity
+        if (!IsGroundedCheck())
+        {
+            velocity.y -= gravity * Time.fixedDeltaTime;
+            velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
+        }
+
+        rigidBody.velocity = velocity;
     }
 
 

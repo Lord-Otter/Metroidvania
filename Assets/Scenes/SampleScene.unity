@@ -897,7 +897,7 @@ Transform:
   m_GameObject: {fileID: 1145036888}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.83, y: 16.38, z: 0}
+  m_LocalPosition: {x: 0, y: 10, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -916,21 +916,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b33ad915f56512445b39fe345973e69d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxMoveSpeed: 10
-  moveAcceleration: 5
-  airControl: 0.5
-  maxAirMoveSpeed: 5
+  movingRight: 0
+  movingLeft: 0
+  jumping: 0
+  highJumping: 0
+  airJumping: 0
+  maxMoveSpeed: 8
+  moveAcceleration: 100
+  airControl: 15
+  maxAirMoveSpeed: 1
   jumpForce: 10
-  jumpCancelForce: 2
+  airJumpForce: 10
+  jumpCancelForce: 10
   maxAirJumps: 2
   airJumps: 0
   canGroundJump: 1
-  jumpGracePeriod: 1.5
+  jumpGracePeriod: 0.1
   rotationSpeed: 0
   gravity: 10
-  horizontalAirDrag: 0.5
+  horizontalAirDrag: 0.2
   horizontalGroundDrag: 2
-  jumpFallDelay: 2
   maxFallSpeed: 10
 --- !u!65 &1145036895
 BoxCollider:
