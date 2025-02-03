@@ -916,25 +916,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b33ad915f56512445b39fe345973e69d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movingRight: 0
-  movingLeft: 0
-  jumping: 0
-  highJumping: 0
-  airJumping: 0
   maxMoveSpeed: 8
   moveAcceleration: 100
-  airControl: 15
-  maxAirMoveSpeed: 1
+  airControl: 30
+  maxAirMoveSpeed: 4
   jumpForce: 10
   airJumpForce: 10
   jumpCancelForce: 10
   maxAirJumps: 2
   airJumps: 0
-  canGroundJump: 1
+  canGroundJump: 0
   jumpGracePeriod: 0.1
-  rotationSpeed: 0
+  rotationSpeed: 15
+  isFacingRight: 1
   gravity: 10
-  horizontalAirDrag: 0.2
+  horizontalAirDrag: 10
   horizontalGroundDrag: 2
   maxFallSpeed: 10
 --- !u!65 &1145036895

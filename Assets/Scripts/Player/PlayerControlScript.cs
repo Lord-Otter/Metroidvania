@@ -7,12 +7,12 @@ using UnityEngine;
 
 public class PlayerControlScript : MonoBehaviour
 {
-    //Controlls
-    [SerializeField] private bool movingRight = false;
-    [SerializeField] private bool movingLeft = false;
-    [SerializeField] private bool jumping = false;
-    [SerializeField] private bool highJumping = false;
-    [SerializeField] private bool airJumping = false;
+    //Controls
+    private bool movingRight = false;
+    private bool movingLeft = false;
+    private bool jumping = false;
+    private bool highJumping = false;
+    private bool airJumping = false;
 
     //Running
     public float maxMoveSpeed;
@@ -32,6 +32,7 @@ public class PlayerControlScript : MonoBehaviour
 
 
     public float rotationSpeed;
+    public bool isFacingRight;
 
     //Physics
     public float gravity;
@@ -62,13 +63,14 @@ public class PlayerControlScript : MonoBehaviour
     private void FixedUpdate()
     {
         Movement();
+        FaceTravelDirection();
     }
 
     void Controls()
     {
-        movingRight = Input.GetKey(KeyCode.D);
-        movingLeft = Input.GetKey(KeyCode.A);
-        
+        movingRight = Input.GetAxisRaw("Horizontal") > 0;
+        movingLeft = Input.GetAxisRaw("Horizontal") < 0;
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (canGroundJump)
@@ -80,10 +82,10 @@ public class PlayerControlScript : MonoBehaviour
                 airJumping = true;
             }
         }
-        
+
         highJumping = Input.GetKey(KeyCode.Space);
     }
-
+    private float drag;
     void Movement()
     {
         Vector3 velocity = rigidBody.velocity;
@@ -99,15 +101,27 @@ public class PlayerControlScript : MonoBehaviour
             canGroundJump = false;
         }
 
+        //WORK IN PROGRESS------------FIX AIR MAX SPEED-------------------------------------------------------------------------
         // Movement
-        float targetSpeed = movingRight ? maxMoveSpeed : movingLeft ? -maxMoveSpeed : 0;
+        float targetSpeed = (movingRight && movingLeft) ? 0 : (movingRight ? maxMoveSpeed : (movingLeft ? -maxMoveSpeed : 0));
         float acceleration = IsGroundedCheck() ? moveAcceleration : airControl;
-        velocity.x = Mathf.MoveTowards(velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+        if (IsGroundedCheck())
+        {
+            velocity.x = Mathf.MoveTowards(velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+        }
 
         // Drag application
         if (!movingRight && !movingLeft)
         {
-            float drag = IsGroundedCheck() ? horizontalGroundDrag : horizontalAirDrag;
+            //float drag; //= IsGroundedCheck() ? horizontalGroundDrag :!IsGroundedCheck && (!movingLeft || movingRight) ? horizontalAirDrag;
+            float drag = IsGroundedCheck() ? horizontalGroundDrag : !IsGroundedCheck() && (!movingLeft || !movingRight) ? horizontalAirDrag : 0;
+            /*if (IsGroundedCheck())
+            {
+                drag = horizontalGroundDrag;
+            }else if(!IsGroundedCheck() && (!movingLeft || movingRight))
+            {
+                drag = horizontalAirDrag;
+            }*/
             velocity.x = Mathf.MoveTowards(velocity.x, 0, drag * Time.fixedDeltaTime);
         }
 
@@ -139,39 +153,36 @@ public class PlayerControlScript : MonoBehaviour
         }
 
         rigidBody.velocity = velocity;
+
     }
-
-
-    //WORK IN PROGRESS-----------------------------------------------------------------------------------
-    /*void FaceTravelDirection(bool isFacingRight)
-    {
-        Vector3 angularVelocity = rigidBody.angularVelocity;
-        float yRotation = transform.eulerAngles.y;
-
-        if (isFacingRight && yRotation > 0)
-        {
-            angularVelocity.y = -rotationSpeed; // Rotate in the opposite direction for right-facing
-        }
-        else if(!isFacingRight && transform.eulerAngles.y < 180)
-        {
-            rigidBody.constraints &= ~RigidbodyConstraints.FreezeRotationY;
-            angularVelocity.y = rotationSpeed;  // Rotate in the regular direction for left-facing
-            if(yRotation == 180)
-            {
-                rigidBody.constraints |= RigidbodyConstraints.FreezeRotationY;
-            }else if(yRotation + rotationSpeed > 180)
-            {
-                yRotation = 180;
-                rigidBody.constraints |= RigidbodyConstraints.FreezeRotationY;
-            }
-        }
-
-        rigidBody.angularVelocity = angularVelocity;
-    }*/
-
 
     bool IsGroundedCheck()
     {
-        return Physics.Raycast(transform.position, Vector3.down, 1f);
+        Vector3 origin1 = transform.position + new Vector3(-0.5f, 0f, 0f);
+        Vector3 origin2 = transform.position + new Vector3(0.5f, 0f, 0f);
+        Vector3 direction = Vector3.down;
+        float raycastDistance = 1.05f;
+
+        Debug.DrawRay(origin1, direction * raycastDistance, Color.green);
+        Debug.DrawRay(origin2, direction * raycastDistance, Color.green);
+
+        bool hit1 = Physics.Raycast(origin1, direction, raycastDistance);
+        bool hit2 = Physics.Raycast(origin2, direction, raycastDistance);
+
+        return hit1 || hit2;
+    }
+
+    void FaceTravelDirection()
+    {
+        if (movingRight && !movingLeft)
+        {
+            isFacingRight = true;
+        }
+        else if (movingLeft && !movingRight)
+        {
+            isFacingRight = false;
+        }
+
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, isFacingRight ? 1 : 179, 0), rotationSpeed * Time.fixedDeltaTime);
     }
 }
