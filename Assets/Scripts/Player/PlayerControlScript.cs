@@ -7,34 +7,51 @@ using UnityEngine;
 
 public class PlayerControlScript : MonoBehaviour
 {
-    //Controls
+    // Controls----------------------
+    // Standard Controls
     private bool movingRight = false;
     private bool movingLeft = false;
     private bool jumping = false;
     private bool highJumping = false;
-    private bool airJumping = false;
 
-    //Running
+    // Special Controls
+    private bool airJumping = false;
+    private bool dashing = false;
+
+    // Running
     public float maxMoveSpeed;
     public float moveAcceleration;
-    public float airControl;
-    public float maxAirMoveSpeed;
+    public float airAcceleration;
+    // public float maxAirMoveSpeed;
 
-    //Jumping
+    // Jumping
     public float jumpForce;
     public float airJumpForce;
     public float jumpCancelForce;
     public int maxAirJumps;
-    [SerializeField] private int airJumps;
+    private int airJumps;
+    public float jumpGracePeriod;
     public bool canGroundJump = true;
     private float airTimeStart;
-    public float jumpGracePeriod;
+    private float dashTimeStart;
+    
+    // Dashing
+    public float dashSpeed;
+    public float dashRange;
+    public float dashCooldown;
+    public bool canDash = true;
+    private bool dashCooldownReset;
+    private bool dashGroundReset;
+    private float dashStartTime;
+    private bool isDashing = false;
+    private float dashStartPosition;
+
 
 
     public float rotationSpeed;
     public bool isFacingRight;
 
-    //Physics
+    // Physics
     public float gravity;
     public float horizontalAirDrag;
     public float horizontalGroundDrag;
@@ -42,16 +59,16 @@ public class PlayerControlScript : MonoBehaviour
     public float maxFallSpeed;
 
     private Rigidbody rigidBody;
-    private new Transform transform;
     private GameObject player;
 
     // Start is called before the first frame update
     void Start()
     {
         rigidBody = GetComponent<Rigidbody>();
-        transform = GetComponent<Transform>();
         player = gameObject;
         airJumps = maxAirJumps;
+
+        StartCoroutine(DashCooldown());
     }
 
     // Update is called once per frame
@@ -68,6 +85,7 @@ public class PlayerControlScript : MonoBehaviour
 
     void Controls()
     {
+        // Standard Movement
         movingRight = Input.GetAxisRaw("Horizontal") > 0;
         movingLeft = Input.GetAxisRaw("Horizontal") < 0;
 
@@ -84,46 +102,50 @@ public class PlayerControlScript : MonoBehaviour
         }
 
         highJumping = Input.GetKey(KeyCode.Space);
+
+        // Special Moves
+        dashing = Input.GetKey(KeyCode.F);
+
     }
-    private float drag;
+
     void Movement()
     {
         Vector3 velocity = rigidBody.velocity;
 
+        // Coyote Jump
         if (IsGroundedCheck())
         {
             airTimeStart = Time.time;
             canGroundJump = true;
+
             airJumps = maxAirJumps;
+
+            //Dash
+            dashGroundReset = true;
         }
         else if (Time.time - airTimeStart >= jumpGracePeriod)
         {
             canGroundJump = false;
         }
 
-        //WORK IN PROGRESS------------FIX AIR MAX SPEED-------------------------------------------------------------------------
         // Movement
+        
         float targetSpeed = (movingRight && movingLeft) ? 0 : (movingRight ? maxMoveSpeed : (movingLeft ? -maxMoveSpeed : 0));
-        float acceleration = IsGroundedCheck() ? moveAcceleration : airControl;
-        if (IsGroundedCheck())
+        float acceleration = IsGroundedCheck() ? moveAcceleration : airAcceleration;
+
+        if (movingLeft || movingRight)
         {
             velocity.x = Mathf.MoveTowards(velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
         }
 
-        // Drag application
+        // Drag 
         if (!movingRight && !movingLeft)
         {
-            //float drag; //= IsGroundedCheck() ? horizontalGroundDrag :!IsGroundedCheck && (!movingLeft || movingRight) ? horizontalAirDrag;
             float drag = IsGroundedCheck() ? horizontalGroundDrag : !IsGroundedCheck() && (!movingLeft || !movingRight) ? horizontalAirDrag : 0;
-            /*if (IsGroundedCheck())
-            {
-                drag = horizontalGroundDrag;
-            }else if(!IsGroundedCheck() && (!movingLeft || movingRight))
-            {
-                drag = horizontalAirDrag;
-            }*/
+
             velocity.x = Mathf.MoveTowards(velocity.x, 0, drag * Time.fixedDeltaTime);
         }
+       
 
         // Jumping
         if (jumping)
@@ -145,26 +167,71 @@ public class PlayerControlScript : MonoBehaviour
             velocity.y = Mathf.Max(velocity.y - jumpCancelForce * Time.fixedDeltaTime, 0);
         }
 
+        // Dashing        
+        if(dashing && canDash)
+        {
+            dashStartTime = Time.time;
+            dashCooldownReset = false;
+            dashGroundReset = false;
+            canDash = false;
+            isDashing = true;
+        }
+
+        if (isDashing)
+        {
+            //velocity.y = 0;
+            velocity.x = isFacingRight ? dashSpeed : -dashSpeed;
+            
+            float dashDuration = dashRange / dashSpeed;
+
+            // Dash Duration
+            if (((Time.time - dashStartTime) > dashDuration) && isFacingRight)
+            {
+                velocity.x = maxMoveSpeed;
+                StartCoroutine(DashCooldown());
+                isDashing = false;
+            }
+            else if (((Time.time - dashStartTime) > dashDuration) && !isFacingRight)
+            {
+                velocity.x = -maxMoveSpeed;
+                StartCoroutine(DashCooldown());
+                isDashing = false;
+                
+            }
+            
+        }
+
+        if(dashGroundReset && dashCooldownReset)
+        {
+            canDash = true;
+        }
+
         // Apply gravity
-        if (!IsGroundedCheck())
+        if (!isDashing)
         {
             velocity.y -= gravity * Time.fixedDeltaTime;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
 
         rigidBody.velocity = velocity;
+    }
 
+    IEnumerator DashCooldown()
+    {
+        yield return new WaitForSeconds(dashCooldown);
+        dashCooldownReset = true;
+        StopCoroutine(DashCooldown());
     }
 
     bool IsGroundedCheck()
     {
-        Vector3 origin1 = transform.position + new Vector3(-0.5f, 0f, 0f);
-        Vector3 origin2 = transform.position + new Vector3(0.5f, 0f, 0f);
+        Vector3 origin1 = transform.position + new Vector3(-0.4f, 0f, 0f);
+        Vector3 origin2 = transform.position + new Vector3(0.4f, 0f, 0f);
         Vector3 direction = Vector3.down;
-        float raycastDistance = 1.05f;
+        float raycastDistance = 1.1f;
 
-        Debug.DrawRay(origin1, direction * raycastDistance, Color.green);
-        Debug.DrawRay(origin2, direction * raycastDistance, Color.green);
+        Debug.DrawRay(origin1, direction * raycastDistance, Color.red);
+        Debug.DrawRay(origin2, direction * raycastDistance, Color.red);
 
         bool hit1 = Physics.Raycast(origin1, direction, raycastDistance);
         bool hit2 = Physics.Raycast(origin2, direction, raycastDistance);
@@ -172,15 +239,35 @@ public class PlayerControlScript : MonoBehaviour
         return hit1 || hit2;
     }
 
+    bool IsTouchingWallCheck()
+    {
+        Vector3 origin1 = transform.position + new Vector3(0f, 0f, 0f);
+        Vector3 origin2 = transform.position + new Vector3(0f, 0f, 0f);
+        Vector3 direction1 = Vector3.right;
+        Vector3 direction2 = Vector3.left;
+        float raycastDistance = 0.55f;
+
+        Debug.DrawRay(origin1, direction1 * raycastDistance, Color.red);
+        Debug.DrawRay(origin2, direction2 * raycastDistance, Color.red);
+
+        bool hit1 = Physics.Raycast(origin1, direction1, raycastDistance);
+        bool hit2 = Physics.Raycast(origin2, direction2, raycastDistance);
+
+        return hit1 || hit2;
+    }
+
     void FaceTravelDirection()
     {
-        if (movingRight && !movingLeft)
+        if (!isDashing)
         {
-            isFacingRight = true;
-        }
-        else if (movingLeft && !movingRight)
-        {
-            isFacingRight = false;
+            if (movingRight && !movingLeft)
+            {
+                isFacingRight = true;
+            }
+            else if (movingLeft && !movingRight)
+            {
+                isFacingRight = false;
+            }
         }
 
         transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, isFacingRight ? 1 : 179, 0), rotationSpeed * Time.fixedDeltaTime);
