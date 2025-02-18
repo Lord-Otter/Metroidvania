@@ -16,13 +16,12 @@ public class PlayerControlScript : MonoBehaviour
 
     // Special Controls
     private bool airJumping = false;
-    private bool dashing = false;
+    //private bool dashing = false;
 
     // Running
     public float maxMoveSpeed;
     public float moveAcceleration;
     public float airAcceleration;
-    // public float maxAirMoveSpeed;
 
     // Jumping
     public float jumpForce;
@@ -33,9 +32,8 @@ public class PlayerControlScript : MonoBehaviour
     public float jumpGracePeriod;
     public bool canGroundJump = true;
     private float airTimeStart;
-    private float dashTimeStart;
     
-    // Dashing
+    /* Dashing
     public float dashSpeed;
     public float dashRange;
     public float dashCooldown;
@@ -44,10 +42,7 @@ public class PlayerControlScript : MonoBehaviour
     private bool dashGroundReset;
     private float dashStartTime;
     private bool isDashing = false;
-    private float dashStartPosition;
-
-
-
+    */
     public float rotationSpeed;
     public bool isFacingRight;
 
@@ -55,21 +50,27 @@ public class PlayerControlScript : MonoBehaviour
     public float gravity;
     public float horizontalAirDrag;
     public float horizontalGroundDrag;
-    //public float jumpFallDelay;
     public float maxFallSpeed;
 
     private Rigidbody rigidBody;
     private GameObject player;
 
+    public Vector3 velocity;
+    public DashScript dashScript;
+
     // Start is called before the first frame update
     void Start()
     {
+        dashScript = GetComponent<DashScript>();
+
         rigidBody = GetComponent<Rigidbody>();
         player = gameObject;
         airJumps = maxAirJumps;
 
-        StartCoroutine(DashCooldown());
+        //StartCoroutine(DashCooldown());
     }
+
+
 
     // Update is called once per frame
     void Update()
@@ -86,16 +87,16 @@ public class PlayerControlScript : MonoBehaviour
     void Controls()
     {
         // Standard Movement
-        movingRight = Input.GetAxisRaw("Horizontal") > 0;
-        movingLeft = Input.GetAxisRaw("Horizontal") < 0;
+        movingRight = Input.GetKey(KeyCode.D);
+        movingLeft = Input.GetKey(KeyCode.A);
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (canGroundJump)
+            if (canGroundJump && !dashScript.isDashing)
             {
                 jumping = true;
             }
-            else if (!IsGroundedCheck() && airJumps > 0)
+            else if (!IsGroundedCheck() && !dashScript.isDashing && (airJumps > 0))
             {
                 airJumping = true;
             }
@@ -104,13 +105,13 @@ public class PlayerControlScript : MonoBehaviour
         highJumping = Input.GetKey(KeyCode.Space);
 
         // Special Moves
-        dashing = Input.GetKey(KeyCode.F);
+        //dashing = Input.GetKey(KeyCode.F);
 
     }
 
-    void Movement()
+    public void Movement()
     {
-        Vector3 velocity = rigidBody.velocity;
+       velocity = rigidBody.velocity;
 
         // Coyote Jump
         if (IsGroundedCheck())
@@ -121,7 +122,7 @@ public class PlayerControlScript : MonoBehaviour
             airJumps = maxAirJumps;
 
             //Dash
-            dashGroundReset = true;
+            //dashGroundReset = true;
         }
         else if (Time.time - airTimeStart >= jumpGracePeriod)
         {
@@ -133,17 +134,24 @@ public class PlayerControlScript : MonoBehaviour
         float targetSpeed = (movingRight && movingLeft) ? 0 : (movingRight ? maxMoveSpeed : (movingLeft ? -maxMoveSpeed : 0));
         float acceleration = IsGroundedCheck() ? moveAcceleration : airAcceleration;
 
-        if (movingLeft || movingRight)
+        if (!dashScript.isDashing)
         {
-            velocity.x = Mathf.MoveTowards(velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+            if (movingLeft || movingRight)
+            {
+                velocity.x = Mathf.MoveTowards(velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+            }
+            // Drag 
+            else if ((!movingRight && !movingLeft) || (movingRight && movingLeft))
+            {
+                float drag = IsGroundedCheck() ? horizontalGroundDrag : !IsGroundedCheck() && (!movingLeft || !movingRight) ? horizontalAirDrag : 0;
+
+                velocity.x = Mathf.MoveTowards(velocity.x, 0, drag * Time.fixedDeltaTime);
+            }
         }
-
-        // Drag 
-        if (!movingRight && !movingLeft)
+        if (dashScript.isDashing)
         {
-            float drag = IsGroundedCheck() ? horizontalGroundDrag : !IsGroundedCheck() && (!movingLeft || !movingRight) ? horizontalAirDrag : 0;
-
-            velocity.x = Mathf.MoveTowards(velocity.x, 0, drag * Time.fixedDeltaTime);
+            velocity.y = 0;
+            velocity.x = isFacingRight ? dashScript.dashSpeed : -dashScript.dashSpeed;
         }
        
 
@@ -167,7 +175,7 @@ public class PlayerControlScript : MonoBehaviour
             velocity.y = Mathf.Max(velocity.y - jumpCancelForce * Time.fixedDeltaTime, 0);
         }
 
-        // Dashing        
+        /* Dashing        
         if(dashing && canDash)
         {
             dashStartTime = Time.time;
@@ -175,12 +183,12 @@ public class PlayerControlScript : MonoBehaviour
             dashGroundReset = false;
             canDash = false;
             isDashing = true;
-        }
+        }*/
 
-        if (isDashing)
+        /*if (isDashing)
         {
-            //velocity.y = 0;
-            velocity.x = isFacingRight ? dashSpeed : -dashSpeed;
+            velocity.y = 0;
+            velocity.x = isFacingRight ? dashScript.dashSpeed : -dashScript.dashSpeed;
             
             float dashDuration = dashRange / dashSpeed;
 
@@ -199,31 +207,50 @@ public class PlayerControlScript : MonoBehaviour
                 
             }
             
-        }
+        }*/
 
-        if(dashGroundReset && dashCooldownReset)
+        /*if(dashGroundReset && dashCooldownReset)
         {
             canDash = true;
-        }
+        }*/
 
         // Apply gravity
-        if (!isDashing)
+        if (!dashScript.isDashing)
         {
             velocity.y -= gravity * Time.fixedDeltaTime;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
 
         rigidBody.velocity = velocity;
+        //velocityX = velocity.x;
+        //velocityY = velocity.y;
     }
 
-    IEnumerator DashCooldown()
+    /*IEnumerator DashCooldown()
     {
         yield return new WaitForSeconds(dashCooldown);
         dashCooldownReset = true;
         StopCoroutine(DashCooldown());
+    }*/
+
+    void FaceTravelDirection()
+    {
+        if (!dashScript.isDashing)
+        {
+            if (movingRight && !movingLeft)
+            {
+                isFacingRight = true;
+            }
+            else if (movingLeft && !movingRight)
+            {
+                isFacingRight = false;
+            }
+        }
+
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, isFacingRight ? 1 : 179, 0), rotationSpeed * Time.fixedDeltaTime);
     }
 
-    bool IsGroundedCheck()
+    public bool IsGroundedCheck()
     {
         Vector3 origin1 = transform.position + new Vector3(-0.4f, 0f, 0f);
         Vector3 origin2 = transform.position + new Vector3(0.4f, 0f, 0f);
@@ -237,39 +264,5 @@ public class PlayerControlScript : MonoBehaviour
         bool hit2 = Physics.Raycast(origin2, direction, raycastDistance);
 
         return hit1 || hit2;
-    }
-
-    bool IsTouchingWallCheck()
-    {
-        Vector3 origin1 = transform.position + new Vector3(0f, 0f, 0f);
-        Vector3 origin2 = transform.position + new Vector3(0f, 0f, 0f);
-        Vector3 direction1 = Vector3.right;
-        Vector3 direction2 = Vector3.left;
-        float raycastDistance = 0.55f;
-
-        Debug.DrawRay(origin1, direction1 * raycastDistance, Color.red);
-        Debug.DrawRay(origin2, direction2 * raycastDistance, Color.red);
-
-        bool hit1 = Physics.Raycast(origin1, direction1, raycastDistance);
-        bool hit2 = Physics.Raycast(origin2, direction2, raycastDistance);
-
-        return hit1 || hit2;
-    }
-
-    void FaceTravelDirection()
-    {
-        if (!isDashing)
-        {
-            if (movingRight && !movingLeft)
-            {
-                isFacingRight = true;
-            }
-            else if (movingLeft && !movingRight)
-            {
-                isFacingRight = false;
-            }
-        }
-
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, isFacingRight ? 1 : 179, 0), rotationSpeed * Time.fixedDeltaTime);
     }
 }
