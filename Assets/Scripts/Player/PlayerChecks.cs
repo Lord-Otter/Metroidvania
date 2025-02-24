@@ -9,6 +9,9 @@ public class PlayerChecks : MonoBehaviour
     public PlayerVelocity playerVelocity;
     public BasicMovementScript basicMovementScript;
     public AttackScript attackScript;
+    public PlayerControlScript playerControlScript;
+
+    //private bool isFacingRight;
 
     // Start is called before the first frame update
     void Start()
@@ -18,6 +21,7 @@ public class PlayerChecks : MonoBehaviour
         basicMovementScript = GetComponent<BasicMovementScript>();
         playerVelocity = GetComponent<PlayerVelocity>();
         attackScript = GetComponent<AttackScript>();
+        playerControlScript = GetComponent<PlayerControlScript>();
     }
 
     // Update is called once per frame
@@ -26,7 +30,7 @@ public class PlayerChecks : MonoBehaviour
         
     }
 
-    public bool IsGroundedCheck()
+    public bool IsGrounded()
     {
         Vector3 origin1 = transform.position + new Vector3(-0.4f, 0f, 0f);
         Vector3 origin2 = transform.position + new Vector3(0.4f, 0f, 0f);
@@ -42,7 +46,7 @@ public class PlayerChecks : MonoBehaviour
         return hit1 || hit2;
     }
 
-    bool IsTouchingWallCheck()
+    bool IsTouchingWall()
     {
         Vector3 origin1 = transform.position + new Vector3(0f, 0f, 0f);
         Vector3 origin2 = transform.position + new Vector3(0f, 0f, 0f);
@@ -57,5 +61,29 @@ public class PlayerChecks : MonoBehaviour
         bool hit2 = Physics.Raycast(origin2, direction2, raycastDistance);
 
         return hit1 || hit2;
+    }
+
+    /*public bool CanGroundJump()
+    {
+        return CanGroundJump;
+    }*/
+
+    public bool IsFacingRight()
+    {        
+        
+        bool isFacingRight = playerInputScript.movingRight && !playerInputScript.movingLeft ? true : false;
+
+
+        /*if (playerControlScript.movingRight && !playerControlScript.movingLeft)
+        {
+            isFacingRight = true;
+        }
+        else if (playerControlScript.movingLeft && !playerControlScript.movingRight)
+        {
+            isFacingRight = false;
+        }*/
+        
+
+        return isFacingRight;
     }
 }

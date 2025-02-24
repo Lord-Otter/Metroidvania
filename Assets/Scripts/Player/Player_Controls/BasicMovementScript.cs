@@ -26,6 +26,12 @@ public class BasicMovementScript : MonoBehaviour
     public int airJumps;
     private bool airJumping = false;
 
+    // Velocity
+    public Vector3 velocity;
+
+    public float horizontalGroundDrag;
+    public float horizontalAirDrag;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -39,13 +45,40 @@ public class BasicMovementScript : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        Movement();
         Jumping();
+    }
+
+    public void Movement()
+    {
+        float targetSpeed = (playerInputScript.movingRight && playerInputScript.movingLeft) ? 0 : (playerInputScript.movingRight ? maxMoveSpeed : (playerInputScript.movingLeft ? -maxMoveSpeed : 0));
+        float acceleration = playerChecks.IsGrounded() ? moveAcceleration : airAcceleration;
+
+        if (!dashScript.isDashing)
+        {
+            if (playerInputScript.movingLeft || playerInputScript.movingRight)
+            {
+                velocity.x = Mathf.MoveTowards(velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+            }
+            // Drag 
+            else if ((!playerInputScript.movingRight && !playerInputScript.movingLeft) || (playerInputScript.movingRight && playerInputScript.movingLeft))
+            {
+                float drag = playerChecks.IsGrounded() ? horizontalGroundDrag : !playerChecks.IsGrounded() && (!playerInputScript.movingLeft || !playerInputScript.movingRight) ? horizontalAirDrag : 0;
+
+                velocity.x = Mathf.MoveTowards(velocity.x, 0, drag * Time.fixedDeltaTime);
+            }
+        }
+        if (dashScript.isDashing)
+        {
+            velocity.y = 0;
+            velocity.x = playerChecks.IsFacingRight() ? dashScript.dashSpeed : -dashScript.dashSpeed;
+        }
     }
 
     public void Jumping()
     {
         // Coyote Jump
-        if (playerChecks.IsGroundedCheck())
+        if (playerChecks.IsGrounded())
         {
             airTimeStart = Time.time;
             canGroundJump = true;

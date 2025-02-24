@@ -9,10 +9,10 @@ public class PlayerControlScript : MonoBehaviour
 {
     // Controls----------------------
     // Standard Controls
-    private bool movingRight = false;
-    private bool movingLeft = false;
-    private bool jumping = false;
-    private bool highJumping = false;
+    public bool movingRight = false;
+    public bool movingLeft = false;
+    public bool jumping = false;
+    public bool highJumping = false;
 
     // Special Controls
     private bool airJumping = false;
@@ -44,7 +44,7 @@ public class PlayerControlScript : MonoBehaviour
     private bool isDashing = false;
     */
     public float rotationSpeed;
-    public bool isFacingRight;
+    //public bool isFacingRight;
 
     // Physics
     public float gravity;
@@ -57,11 +57,13 @@ public class PlayerControlScript : MonoBehaviour
 
     public Vector3 velocity;
     public DashScript dashScript;
+    public PlayerChecks playerChecks;
 
     // Start is called before the first frame update
     void Start()
     {
         dashScript = GetComponent<DashScript>();
+        playerChecks = GetComponent<PlayerChecks>();
 
         rigidBody = GetComponent<Rigidbody>();
         player = gameObject;
@@ -96,7 +98,7 @@ public class PlayerControlScript : MonoBehaviour
             {
                 jumping = true;
             }
-            else if (!IsGroundedCheck() && !dashScript.isDashing && (airJumps > 0))
+            else if (!playerChecks.IsGrounded() && !dashScript.isDashing && (airJumps > 0))
             {
                 airJumping = true;
             }
@@ -111,10 +113,10 @@ public class PlayerControlScript : MonoBehaviour
 
     public void Movement()
     {
-       velocity = rigidBody.velocity;
+       //velocity = rigidBody.velocity; //This is the source of my problems!!!!
 
         // Coyote Jump
-        if (IsGroundedCheck())
+        if (playerChecks.IsGrounded())
         {
             airTimeStart = Time.time;
             canGroundJump = true;
@@ -132,7 +134,7 @@ public class PlayerControlScript : MonoBehaviour
         // Movement
         
         float targetSpeed = (movingRight && movingLeft) ? 0 : (movingRight ? maxMoveSpeed : (movingLeft ? -maxMoveSpeed : 0));
-        float acceleration = IsGroundedCheck() ? moveAcceleration : airAcceleration;
+        float acceleration = playerChecks.IsGrounded() ? moveAcceleration : airAcceleration;
 
         if (!dashScript.isDashing)
         {
@@ -143,7 +145,7 @@ public class PlayerControlScript : MonoBehaviour
             // Drag 
             else if ((!movingRight && !movingLeft) || (movingRight && movingLeft))
             {
-                float drag = IsGroundedCheck() ? horizontalGroundDrag : !IsGroundedCheck() && (!movingLeft || !movingRight) ? horizontalAirDrag : 0;
+                float drag = playerChecks.IsGrounded() ? horizontalGroundDrag : !playerChecks.IsGrounded() && (!movingLeft || !movingRight) ? horizontalAirDrag : 0;
 
                 velocity.x = Mathf.MoveTowards(velocity.x, 0, drag * Time.fixedDeltaTime);
             }
@@ -151,7 +153,7 @@ public class PlayerControlScript : MonoBehaviour
         if (dashScript.isDashing)
         {
             velocity.y = 0;
-            velocity.x = isFacingRight ? dashScript.dashSpeed : -dashScript.dashSpeed;
+            //velocity.x = playerChecks.isFacingRight ? dashScript.dashSpeed : -dashScript.dashSpeed;
         }
        
 
@@ -233,7 +235,7 @@ public class PlayerControlScript : MonoBehaviour
         StopCoroutine(DashCooldown());
     }*/
 
-    void FaceTravelDirection()
+    /*public bool IsFacingRight()
     {
         if (!dashScript.isDashing)
         {
@@ -247,10 +249,15 @@ public class PlayerControlScript : MonoBehaviour
             }
         }
 
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, isFacingRight ? 1 : 179, 0), rotationSpeed * Time.fixedDeltaTime);
+        return isFacingRight;
+    }*/
+
+    void FaceTravelDirection()
+    {
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, playerChecks.IsFacingRight() ? 1 : 179, 0), rotationSpeed * Time.fixedDeltaTime);
     }
 
-    public bool IsGroundedCheck()
+    /*public bool IsGroundedCheck()
     {
         Vector3 origin1 = transform.position + new Vector3(-0.4f, 0f, 0f);
         Vector3 origin2 = transform.position + new Vector3(0.4f, 0f, 0f);
@@ -264,5 +271,5 @@ public class PlayerControlScript : MonoBehaviour
         bool hit2 = Physics.Raycast(origin2, direction, raycastDistance);
 
         return hit1 || hit2;
-    }
+    }*/
 }

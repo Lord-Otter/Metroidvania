@@ -45,7 +45,7 @@ public class PlayerInputScript : MonoBehaviour
             {
                 jumping = true;
             }
-            else if (!playerChecks.IsGroundedCheck() && !dashScript.isDashing && (basicMovementScript.airJumps > 0))
+            else if (!playerChecks.IsGrounded() && !dashScript.isDashing && (basicMovementScript.airJumps > 0))
             {
                 airJumping = true;
             }

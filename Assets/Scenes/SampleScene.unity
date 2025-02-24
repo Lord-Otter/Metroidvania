@@ -1129,9 +1129,9 @@ GameObject:
   - component: {fileID: 1145036893}
   - component: {fileID: 1145036900}
   - component: {fileID: 1145036894}
+  - component: {fileID: 1145036902}
   - component: {fileID: 1145036903}
   - component: {fileID: 1145036899}
-  - component: {fileID: 1145036902}
   - component: {fileID: 1145036901}
   - component: {fileID: 1145036904}
   - component: {fileID: 1145036892}
@@ -1252,6 +1252,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b33ad915f56512445b39fe345973e69d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  movingRight: 0
+  movingLeft: 0
+  jumping: 0
+  highJumping: 0
   maxMoveSpeed: 8
   moveAcceleration: 100
   airAcceleration: 50
@@ -1262,13 +1266,13 @@ MonoBehaviour:
   jumpGracePeriod: 0.1
   canGroundJump: 0
   rotationSpeed: 15
-  isFacingRight: 1
   gravity: 10
   horizontalAirDrag: 5
   horizontalGroundDrag: 100
   maxFallSpeed: 10
   velocity: {x: 0, y: 0, z: 0}
   dashScript: {fileID: 0}
+  playerChecks: {fileID: 0}
 --- !u!136 &1145036895
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1351,7 +1355,6 @@ MonoBehaviour:
   playerVelocity: {fileID: 0}
   playerChecks: {fileID: 0}
   attackScript: {fileID: 0}
-  playerControlScript: {fileID: 0}
   inputDash: 0
   dashSpeed: 25
   dashRange: 6
@@ -1375,6 +1378,7 @@ MonoBehaviour:
   basicMovementScript: {fileID: 0}
   playerChecks: {fileID: 0}
   attackScript: {fileID: 0}
+  velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &1145036902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1392,16 +1396,19 @@ MonoBehaviour:
   playerVelocity: {fileID: 0}
   playerChecks: {fileID: 0}
   attackScript: {fileID: 0}
-  maxMoveSpeed: 0
-  moveAcceleration: 0
-  airAcceleration: 0
-  jumpForce: 0
-  airJumpForce: 0
-  jumpCancelForce: 0
+  maxMoveSpeed: 8
+  moveAcceleration: 100
+  airAcceleration: 50
+  jumpForce: 10
+  airJumpForce: 10
+  jumpCancelForce: 10
   canGroundJump: 1
-  maxAirJumps: 0
-  jumpGracePeriod: 0
+  maxAirJumps: 1
+  jumpGracePeriod: 0.1
   airJumps: 0
+  velocity: {x: 0, y: 0, z: 0}
+  horizontalGroundDrag: 0
+  horizontalAirDrag: 0
 --- !u!114 &1145036903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1441,6 +1448,7 @@ MonoBehaviour:
   playerVelocity: {fileID: 0}
   basicMovementScript: {fileID: 0}
   attackScript: {fileID: 0}
+  playerControlScript: {fileID: 0}
 --- !u!1 &1300907540
 GameObject:
   m_ObjectHideFlags: 0

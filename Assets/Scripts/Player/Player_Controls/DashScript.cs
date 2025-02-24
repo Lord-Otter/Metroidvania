@@ -10,7 +10,7 @@ public class DashScript : MonoBehaviour
     public PlayerChecks playerChecks;
     public AttackScript attackScript;
 
-    public PlayerControlScript playerControlScript;
+    //public PlayerControlScript playerControlScript;
 
     public bool inputDash;
     public float dashSpeed;
@@ -31,7 +31,7 @@ public class DashScript : MonoBehaviour
         playerChecks = GetComponent<PlayerChecks>();
         attackScript = GetComponent<AttackScript>();
 
-        playerControlScript = GetComponent<PlayerControlScript>();
+        //playerControlScript = GetComponent<PlayerControlScript>();
 
         StartCoroutine(DashCooldown());
     }
@@ -39,8 +39,7 @@ public class DashScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //inputDash = Input.GetKey(KeyCode.F);
-        //UpdateDashVariables();
+
     }
 
     private void FixedUpdate()
@@ -50,7 +49,7 @@ public class DashScript : MonoBehaviour
 
     void DashExecution()
     {
-        if (playerChecks.IsGroundedCheck())
+        if (playerChecks.IsGrounded())
         {
             dashGroundReset = true;
         }
@@ -71,21 +70,21 @@ public class DashScript : MonoBehaviour
 
         if (isDashing)
         {
-            playerControlScript.velocity.y = 0;
-            playerControlScript.velocity.x = playerControlScript.isFacingRight ? dashSpeed : -dashSpeed;
+            basicMovementScript.velocity.y = 0;
+            basicMovementScript.velocity.x = playerChecks.IsFacingRight() ? dashSpeed : -dashSpeed;
 
             float dashDuration = dashRange / dashSpeed;
 
             // Dash Duration
-            if (((Time.time - dashStartTime) > dashDuration) && playerControlScript.isFacingRight)
+            if (((Time.time - dashStartTime) > dashDuration) && playerChecks.IsFacingRight())
             {
-                playerControlScript.velocity.x = playerControlScript.maxMoveSpeed;
+                basicMovementScript.velocity.x = basicMovementScript.maxMoveSpeed;
                 StartCoroutine(DashCooldown());
                 isDashing = false;
             }
-            else if (((Time.time - dashStartTime) > dashDuration) && !playerControlScript.isFacingRight)
+            else if (((Time.time - dashStartTime) > dashDuration) && !playerChecks.IsFacingRight())
             {
-                playerControlScript.velocity.x = -playerControlScript.maxMoveSpeed;
+                basicMovementScript.velocity.x = -basicMovementScript.maxMoveSpeed;
                 StartCoroutine(DashCooldown());
                 isDashing = false;
             }
