@@ -4,30 +4,31 @@ using UnityEngine;
 
 public class PlayerChecks : MonoBehaviour
 {
-    public PlayerInputScript playerInputScript;
-    public DashScript dashScript;
-    public PlayerVelocity playerVelocity;
-    public BasicMovementScript basicMovementScript;
-    public AttackScript attackScript;
-    public PlayerControlScript playerControlScript;
+    private AttackScript attackScript;
+    private BasicMovementScript basicMovementScript;
+    private DashScript dashScript;
+    private PlayerInputScript playerInputScript;
+    private PlayerVelocity playerVelocity;
 
-    //private bool isFacingRight;
+    public bool isFacingRight;
 
     // Start is called before the first frame update
     void Start()
     {
-        playerInputScript = GetComponent<PlayerInputScript>();
-        dashScript = GetComponent<DashScript>();
-        basicMovementScript = GetComponent<BasicMovementScript>();
-        playerVelocity = GetComponent<PlayerVelocity>();
         attackScript = GetComponent<AttackScript>();
-        playerControlScript = GetComponent<PlayerControlScript>();
+        basicMovementScript = GetComponent<BasicMovementScript>();
+        dashScript = GetComponent<DashScript>();
+        playerInputScript = GetComponent<PlayerInputScript>();
+        playerVelocity = GetComponent<PlayerVelocity>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if ((playerInputScript.movingRight && !playerInputScript.movingLeft && !dashScript.isDashing) || (!playerInputScript.movingRight && playerInputScript.movingLeft && !dashScript.isDashing))
+        {
+            IsFacingRight();
+        }
     }
 
     public bool IsGrounded()
@@ -46,7 +47,7 @@ public class PlayerChecks : MonoBehaviour
         return hit1 || hit2;
     }
 
-    bool IsTouchingWall()
+    public bool IsTouchingWall()
     {
         Vector3 origin1 = transform.position + new Vector3(0f, 0f, 0f);
         Vector3 origin2 = transform.position + new Vector3(0f, 0f, 0f);
@@ -68,22 +69,15 @@ public class PlayerChecks : MonoBehaviour
         return CanGroundJump;
     }*/
 
-    public bool IsFacingRight()
-    {        
-        
-        bool isFacingRight = playerInputScript.movingRight && !playerInputScript.movingLeft ? true : false;
-
-
-        /*if (playerControlScript.movingRight && !playerControlScript.movingLeft)
+    void IsFacingRight()
+    {
+        if (playerInputScript.movingRight && !playerInputScript.movingLeft)
         {
             isFacingRight = true;
         }
-        else if (playerControlScript.movingLeft && !playerControlScript.movingRight)
+        else if (playerInputScript.movingLeft && !playerInputScript.movingRight)
         {
             isFacingRight = false;
-        }*/
-        
-
-        return isFacingRight;
+        }
     }
 }
