@@ -14,8 +14,9 @@ public class PlayerVelocity : MonoBehaviour
     public Vector3 velocity;
 
     // Physics
-    public int gravity;
-    public int maxFallSpeed;
+    public float gravity = 15f;
+    public float jumpGravity = 10f;
+    public float maxFallSpeed = 20f;
 
     // Start is called before the first frame update
     void Start()
@@ -39,7 +40,12 @@ public class PlayerVelocity : MonoBehaviour
     {
         velocity = rigidBody.velocity;
 
-        if (!dashScript.isDashing && !playerChecks.IsGrounded())
+        if (!dashScript.isDashing &&  (playerInputScript.highJumping && velocity.y > 0))
+        {
+            velocity.y -= jumpGravity * Time.fixedDeltaTime;
+            velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
+        }
+        else if (!dashScript.isDashing)
         {
             velocity.y -= gravity * Time.fixedDeltaTime;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);

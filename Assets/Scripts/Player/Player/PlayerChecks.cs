@@ -12,6 +12,11 @@ public class PlayerChecks : MonoBehaviour
 
     public bool isFacingRight;
 
+    // Test
+    private float directionChangeTime = 0f;
+    private float requiredHoldTime = 0.025f; // Time in seconds
+    private bool lastMovingRight = true; // Stores last movement direction
+
     // Start is called before the first frame update
     void Start()
     {
@@ -24,27 +29,34 @@ public class PlayerChecks : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {        
         if ((playerInputScript.movingRight && !playerInputScript.movingLeft && !dashScript.isDashing) || (!playerInputScript.movingRight && playerInputScript.movingLeft && !dashScript.isDashing))
         {
             IsFacingRight();
         }
+
     }
 
     public bool IsGrounded()
     {
         Vector3 origin1 = transform.position + new Vector3(-0.4f, 0f, 0f);
         Vector3 origin2 = transform.position + new Vector3(0.4f, 0f, 0f);
+        Vector3 originC = transform.position + new Vector3(00f, 0f, 0f);
         Vector3 direction = Vector3.down;
         float raycastDistance = 1.1f;
 
+        Vector3 directionC = Vector3.down;
+        float raycastDistanceC = 1.1f;
+
         Debug.DrawRay(origin1, direction * raycastDistance, Color.red);
         Debug.DrawRay(origin2, direction * raycastDistance, Color.red);
+        Debug.DrawRay(originC, directionC * raycastDistanceC, Color.red);
 
         bool hit1 = Physics.Raycast(origin1, direction, raycastDistance);
         bool hit2 = Physics.Raycast(origin2, direction, raycastDistance);
+        bool hitC = Physics.Raycast(origin2, directionC, raycastDistanceC);
 
-        return hit1 || hit2;
+        return hit1 || hit2 || hitC;
     }
 
     public bool IsTouchingWall()
@@ -71,11 +83,27 @@ public class PlayerChecks : MonoBehaviour
 
     void IsFacingRight()
     {
-        if (playerInputScript.movingRight && !playerInputScript.movingLeft)
+        bool movingRight = playerInputScript.movingRight && !playerInputScript.movingLeft;
+        bool movingLeft = playerInputScript.movingLeft && !playerInputScript.movingRight;
+
+        // When direction changes, reset the timer
+        if (movingRight && !lastMovingRight)
+        {
+            directionChangeTime = Time.time;
+            lastMovingRight = true;
+        }
+        else if (movingLeft && lastMovingRight)
+        {
+            directionChangeTime = Time.time;
+            lastMovingRight = false;
+        }
+
+        // Wait for requiredHoldTime before changing facing direction
+        if (movingRight && Time.time - directionChangeTime >= requiredHoldTime)
         {
             isFacingRight = true;
         }
-        else if (playerInputScript.movingLeft && !playerInputScript.movingRight)
+        else if (movingLeft && Time.time - directionChangeTime >= requiredHoldTime)
         {
             isFacingRight = false;
         }

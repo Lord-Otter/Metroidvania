@@ -36,6 +36,7 @@ public class AttackScript : MonoBehaviour
 
     void Update()
     {
+        // Aim Attack
         if (mouseAiming)
         {
             LookTowardMouse();
@@ -45,9 +46,10 @@ public class AttackScript : MonoBehaviour
             AimWithoutMouse();
         }
 
+        // Draw Rays
         if (playerInputScript.attacking)
         {
-            CastFanRay(transform.position, aimObject.up);
+            CastFanRay(transform.position, aimObject.right);
             DrawDebugCircle(transform.position, outerRadius, Color.blue);
             DrawDebugCircle(transform.position, innerRadius, Color.cyan);
         }
@@ -128,7 +130,7 @@ public class AttackScript : MonoBehaviour
             float distance = Vector2.Distance(origin, hit.transform.position);
             Vector3 directionToTarget = (hit.transform.position - origin).normalized;
 
-            float angle = Vector3.Angle(aimObject.up, directionToTarget);
+            float angle = Vector3.Angle(aimObject.right, directionToTarget);
             if (angle <= coneAngle / 2 && distance >= innerRadius)
             {
                 Debug.Log("Circle Hit: " + hit.name);

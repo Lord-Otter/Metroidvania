@@ -53,7 +53,7 @@ public class PlayerInputScript : MonoBehaviour
         movingLeft = Input.GetAxisRaw("Horizontal") < 0;
 
         // Analog Movement
-        moveHorizontal = Input.GetAxis("Horizontal");
+        moveHorizontal = Input.GetAxisRaw("Horizontal");
 
         // Jumping
         if (Input.GetButtonDown("Jump"))

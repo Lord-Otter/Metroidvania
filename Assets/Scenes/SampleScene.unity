@@ -955,7 +955,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d02d72ff382da34f9642c18df5d6a24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationSpeed: 15
+  rotationSpeed: 5
 --- !u!1 &955308991
 GameObject:
   m_ObjectHideFlags: 0
@@ -1526,8 +1526,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rigidBody: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
-  gravity: 10
-  maxFallSpeed: 10
+  gravity: 15
+  jumpGravity: 10
+  maxFallSpeed: 20
 --- !u!1 &1300907540
 GameObject:
   m_ObjectHideFlags: 0

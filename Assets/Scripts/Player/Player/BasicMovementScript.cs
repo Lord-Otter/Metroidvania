@@ -95,7 +95,7 @@ public class BasicMovementScript : MonoBehaviour
         }
 
         // Coyote Jump
-        if (playerChecks.IsGrounded() || playerChecks.IsTouchingWall())
+        if (playerChecks.IsGrounded())
         {
             airTimeStart = Time.time;
             canGroundJump = true;
