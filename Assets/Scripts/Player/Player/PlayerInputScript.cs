@@ -15,6 +15,8 @@ public class PlayerInputScript : MonoBehaviour
 
     // Movement
     public float moveHorizontal;
+    public float moveVertical;
+    public float stickDeadZone;
 
     public bool movingRight;
     public bool movingLeft;
@@ -48,12 +50,13 @@ public class PlayerInputScript : MonoBehaviour
     void Controls()
     {
         // Standard Movement
-        // Binary Movement
-        movingRight = Input.GetAxisRaw("Horizontal") > 0;
-        movingLeft = Input.GetAxisRaw("Horizontal") < 0;
-
         // Analog Movement
         moveHorizontal = Input.GetAxisRaw("Horizontal");
+        moveVertical = Input.GetAxisRaw("Vertical");
+
+        // Binary Movement
+        movingRight = Input.GetAxisRaw("Horizontal") > stickDeadZone;
+        movingLeft = Input.GetAxisRaw("Horizontal") < -stickDeadZone;
 
         // Jumping
         if (Input.GetButtonDown("Jump"))

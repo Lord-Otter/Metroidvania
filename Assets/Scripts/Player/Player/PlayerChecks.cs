@@ -83,27 +83,11 @@ public class PlayerChecks : MonoBehaviour
 
     void IsFacingRight()
     {
-        bool movingRight = playerInputScript.movingRight && !playerInputScript.movingLeft;
-        bool movingLeft = playerInputScript.movingLeft && !playerInputScript.movingRight;
-
-        // When direction changes, reset the timer
-        if (movingRight && !lastMovingRight)
-        {
-            directionChangeTime = Time.time;
-            lastMovingRight = true;
-        }
-        else if (movingLeft && lastMovingRight)
-        {
-            directionChangeTime = Time.time;
-            lastMovingRight = false;
-        }
-
-        // Wait for requiredHoldTime before changing facing direction
-        if (movingRight && Time.time - directionChangeTime >= requiredHoldTime)
+        if (playerInputScript.movingRight && !playerInputScript.movingLeft)
         {
             isFacingRight = true;
         }
-        else if (movingLeft && Time.time - directionChangeTime >= requiredHoldTime)
+        else if (!playerInputScript.movingRight && playerInputScript.movingLeft)
         {
             isFacingRight = false;
         }
