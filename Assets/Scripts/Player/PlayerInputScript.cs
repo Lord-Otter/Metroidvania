@@ -12,19 +12,19 @@ public class PlayerInputScript : MonoBehaviour
     private PlayerChecks playerChecks;
     private PlayerVelocity playerVelocity;
 
-    // Aiming
+    [Header("Aiming")]
     public float aimHorizontalR;
     public float aimVerticalR;
     public float aimHorizontalL;
     public float aimVerticalL;
 
-    // Aim Mode
+    
     public enum AimMode { Mouse, Stick, Move }
+    [Header("Aiming Mode")]
     public AimMode aimMode;
     public Transform aimObject;
-    public bool triggerAttack;
 
-    // Movement
+    [Header("Movement")]
     public float moveHorizontal;
     public float moveVertical;
 
@@ -34,12 +34,13 @@ public class PlayerInputScript : MonoBehaviour
     public bool highJumping;
     public bool airJumping;
 
-    // Attacking
+    [Header("Attacks")]
     public bool attacking;
 
-    // Stick Missinput Prevention
+    // Missinput Prevention
     private float inputHoldTime = 0f;
     private bool isHoldingInput = false;
+    [Header("Missinput Prevention")]
     public float stickDeadZone;
     public float inputHoldThreshold = 0.025f; // 1 second threshold
 

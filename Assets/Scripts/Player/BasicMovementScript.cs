@@ -11,12 +11,12 @@ public class BasicMovementScript : MonoBehaviour
     private PlayerVelocity playerVelocity;
 
 
-    // Running
+    [Header("Running")]
     public float maxMoveSpeed = 10f;
     public float moveAcceleration = 100f;
     public float airAcceleration = 50f;
 
-    // Jumping
+    [Header("Jumping")]
     public float jumpForce = 10f;
     public float airJumpForce = 10f;
     public float jumpCancelForce = 10f;
@@ -26,7 +26,7 @@ public class BasicMovementScript : MonoBehaviour
     private float airTimeStart;
     public int airJumps;
 
-    // Drag
+    [Header("Drag")]
     public float horizontalGroundDrag = 100f;
     public float horizontalAirDrag = 5f;
 

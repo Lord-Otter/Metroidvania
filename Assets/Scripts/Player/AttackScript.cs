@@ -10,13 +10,18 @@ public class AttackScript : MonoBehaviour
     private PlayerInputScript playerInputScript;
     private PlayerVelocity playerVelocity;
 
-    public Transform aimObject;
-
-    // Raycast
-    public float coneAngle = 45f;
-    public float coneRadius = 5f;
-    public int rayCount = 10;
-    public LayerMask targetLayer;
+    [Header("Collider")]
+    private Transform atkDirection;
+    private Transform atkColliderTransform;
+    private BoxCollider2D atkColliderTrigger;
+    public float defaultXOffset;
+    public float defaultYOffset;
+    public float defaultWidth;
+    public float defaultHeight;
+    public float downXOffset;
+    public float downYOffset;
+    public float downWidth;
+    public float downHeight;
 
     void Start()
     {
@@ -26,39 +31,55 @@ public class AttackScript : MonoBehaviour
         playerInputScript = GetComponent<PlayerInputScript>();
         playerVelocity = GetComponent<PlayerVelocity>();
 
-        aimObject = GameObject.Find("Attack_Direction").transform;
+        atkDirection = GameObject.Find("Attack_Direction").transform;
+        atkColliderTransform = GameObject.Find("Attack_Trigger").transform;
+        atkColliderTrigger = GetComponentInChildren<BoxCollider2D>();
+    }
+
+    void Update()
+    {
+        MoveAttackTrigger();
     }
 
     void FixedUpdate()
     {
-        // Draw Rays
         if (playerInputScript.attacking)
         {
-            CastConeRay(transform.position, aimObject.right);
+            
         }
     }
 
-    void CastConeRay(Vector3 origin, Vector3 direction)
+    void MoveAttackTrigger()
     {
-        float halfAngle = coneAngle / 2f;
+        if (playerInputScript == null) return;
 
-        for (int i = 0; i < rayCount; i++)
+        float aimAngle = playerInputScript.aimObject.rotation.eulerAngles.z;
+        float[] angles = { 0, 45, 90, 135, 180, 225, 270, 315 };
+
+        float closestAngle = angles[0];
+        float smallestDifference = Mathf.Abs(Mathf.DeltaAngle(aimAngle, closestAngle));
+
+        foreach (float angle in angles)
         {
-            float angle = -halfAngle + (i / (float)(rayCount - 1)) * coneAngle;
-            Vector3 rayDirection = Quaternion.Euler(0, 0, angle) * direction;
+            float difference = Mathf.Abs(Mathf.DeltaAngle(aimAngle, angle));
 
-            Debug.DrawRay(origin, rayDirection * coneRadius, Color.green, 0.5f);
-
-            RaycastHit[] hits = Physics.RaycastAll(origin, rayDirection, coneRadius, targetLayer);
-
-            if (hits.Length > 0)
+            if (difference < smallestDifference)
             {
-                foreach (RaycastHit hit in hits)
-                {
-                    Debug.DrawLine(origin, hit.point, Color.red, 0.5f);
-                    Debug.Log("Hit: " + hit.collider.name);
-                }
+                smallestDifference = difference;
+                closestAngle = angle;
             }
+        }
+        if(closestAngle == 315 || closestAngle == 270 || closestAngle == 225)
+        {
+            atkColliderTrigger.offset = new Vector2(downXOffset, downYOffset);
+            atkColliderTrigger.size = new Vector2(downWidth, downHeight);
+            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, 270);
+        }
+        else
+        {
+            atkColliderTrigger.offset = new Vector2(defaultXOffset, defaultYOffset);
+            atkColliderTrigger.size = new Vector2(defaultWidth, defaultHeight);
+            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
         }
     }
 }
