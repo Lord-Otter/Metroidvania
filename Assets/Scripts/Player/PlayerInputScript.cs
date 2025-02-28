@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements.Experimental;
 
@@ -11,12 +12,21 @@ public class PlayerInputScript : MonoBehaviour
     private PlayerChecks playerChecks;
     private PlayerVelocity playerVelocity;
 
-    public Rigidbody rigidBody;
+    // Aiming
+    public float aimHorizontalR;
+    public float aimVerticalR;
+    public float aimHorizontalL;
+    public float aimVerticalL;
+
+    // Aim Mode
+    public enum AimMode { Mouse, Stick, Move }
+    public AimMode aimMode;
+    public Transform aimObject;
+    public bool triggerAttack;
 
     // Movement
     public float moveHorizontal;
     public float moveVertical;
-    public float stickDeadZone;
 
     public bool movingRight;
     public bool movingLeft;
@@ -24,14 +34,19 @@ public class PlayerInputScript : MonoBehaviour
     public bool highJumping;
     public bool airJumping;
 
-    // Aiming
-    public float aimHorizontal;
-    public float aimVertical;
-
     // Attacking
     public bool attacking;
 
-    // Start is called before the first frame update
+    // Stick Missinput Prevention
+    private float inputHoldTime = 0f;
+    private bool isHoldingInput = false;
+    public float stickDeadZone;
+    public float inputHoldThreshold = 0.025f; // 1 second threshold
+
+    private float aimInputHoldTime = 0f;
+    private bool isHoldingAimInput = false;
+    public float aimInputHoldThreshold = 0.025f; // Delay threshold for aiming
+
     void Start()
     {
         attackScript = GetComponent<AttackScript>();
@@ -39,24 +54,96 @@ public class PlayerInputScript : MonoBehaviour
         dashScript = GetComponent<DashScript>();
         playerChecks = GetComponent<PlayerChecks>();
         playerVelocity = GetComponent<PlayerVelocity>();
+
+        aimObject = GameObject.Find("Attack_Direction").transform;
     }
 
-    // Update is called once per frame
     void Update()
     {
         Controls();
     }
 
+    void FixedUpdate()
+    {
+        // Aim Mode
+        AimModeFunction();
+    }
+
     void Controls()
     {
-        // Standard Movement
-        // Analog Movement
-        moveHorizontal = Input.GetAxisRaw("Horizontal");
-        moveVertical = Input.GetAxisRaw("Vertical");
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
+        float verticalInput = Input.GetAxisRaw("Vertical");
 
-        // Binary Movement
-        movingRight = Input.GetAxisRaw("Horizontal") > stickDeadZone;
-        movingLeft = Input.GetAxisRaw("Horizontal") < -stickDeadZone;
+        if (Mathf.Abs(horizontalInput) > stickDeadZone || Mathf.Abs(verticalInput) > stickDeadZone)
+        {
+            if (!isHoldingInput)
+            {
+                isHoldingInput = true;
+                inputHoldTime = 0f;
+            }
+            else
+            {
+                inputHoldTime += Time.deltaTime;
+            }
+        }
+        else
+        {
+            isHoldingInput = false;
+            inputHoldTime = 0f;
+        }
+
+        if (inputHoldTime >= inputHoldThreshold)
+        {
+            moveHorizontal = horizontalInput;
+            moveVertical = verticalInput;
+            movingRight = horizontalInput > stickDeadZone;
+            movingLeft = horizontalInput < -stickDeadZone;
+
+            aimHorizontalL = horizontalInput;
+            aimVerticalL = verticalInput;
+        }
+        else
+        {
+            moveHorizontal = 0f;
+            moveVertical = 0f;
+            movingRight = false;
+            movingLeft = false;
+            aimHorizontalL = 0f;
+            aimVerticalL = 0f;
+        }
+
+        // Aiming Stick Input Delay
+        float horizontalInputR = Input.GetAxisRaw("RightStickX");
+        float verticalInputR = Input.GetAxisRaw("RightStickY");
+
+        if (Mathf.Abs(horizontalInputR) > stickDeadZone || Mathf.Abs(verticalInputR) > stickDeadZone)
+        {
+            if (!isHoldingAimInput)
+            {
+                isHoldingAimInput = true;
+                aimInputHoldTime = 0f;
+            }
+            else
+            {
+                aimInputHoldTime += Time.deltaTime;
+            }
+        }
+        else
+        {
+            isHoldingAimInput = false;
+            aimInputHoldTime = 0f;
+        }
+
+        if (aimInputHoldTime >= aimInputHoldThreshold)
+        {
+            aimHorizontalR = horizontalInputR;
+            aimVerticalR = verticalInputR;
+        }
+        else
+        {
+            aimHorizontalR = 0f;
+            aimVerticalR = 0f;
+        }
 
         // Jumping
         if (Input.GetButtonDown("Jump"))
@@ -76,11 +163,83 @@ public class PlayerInputScript : MonoBehaviour
         // Special Moves
         dashScript.inputDash = Input.GetButton("Dash");
 
-        // Aiming
-        aimHorizontal = Input.GetAxisRaw("Horizontal");
-        aimVertical = Input.GetAxisRaw("Vertical");
-
         // Attack
-        attacking = Input.GetButton("Attack1");
+        attacking = (aimMode == AimMode.Stick) 
+        ? Input.GetAxisRaw("TriggerAttack") > 0.1f 
+        : Input.GetButton("ButtonAttack");
     }
+ #region Aiming Types
+    void AimModeFunction()
+    {
+        switch (aimMode)
+        {
+            case AimMode.Mouse:
+                MouseAim();
+                break;
+            case AimMode.Stick:
+                StickAim();
+                break;
+            case AimMode.Move:
+                MoveAim();
+                break;
+        }
+    }
+
+    void MouseAim()
+    {
+        Vector3 mouseScreenPosition = Input.mousePosition;
+
+        Ray ray = Camera.main.ScreenPointToRay(mouseScreenPosition);
+        Plane plane = new Plane(Vector3.forward, Vector3.zero);
+        float distance;
+
+        if (plane.Raycast(ray, out distance))
+        {
+            Vector3 worldMousePosition = ray.GetPoint(distance);
+            Vector3 direction = worldMousePosition - transform.position;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+            aimObject.rotation = Quaternion.Euler(0, 0, angle);
+        }
+    }
+
+    void StickAim()
+    {
+        Vector3 inputDirectionR = new Vector3(aimHorizontalR, aimVerticalR, 0f).normalized;
+
+        if (inputDirectionR.magnitude > 0f)
+        {
+            float angle = Mathf.Atan2(inputDirectionR.y, inputDirectionR.x) * Mathf.Rad2Deg;
+            aimObject.rotation = Quaternion.Euler(0, 0, angle);
+        }
+        else if (playerChecks.isFacingRight)
+        {
+            aimObject.rotation = Quaternion.Euler(0, 0, 0);
+        }
+        else
+        {
+            aimObject.rotation = Quaternion.Euler(0, 0, 180);
+        }
+    }
+
+    void MoveAim()
+    {
+        Vector3 inputDirection = new Vector3(aimHorizontalL, aimVerticalL, 0f).normalized;
+
+        if (inputDirection.magnitude > 0f)
+        {
+            float angle = Mathf.Atan2(inputDirection.y, inputDirection.x) * Mathf.Rad2Deg;
+            aimObject.rotation = Quaternion.Euler(0, 0, angle);
+        }
+        else if (playerChecks.isFacingRight)
+        {
+            aimObject.rotation = Quaternion.Euler(0, 0, 0);
+        }
+        else
+        {
+            aimObject.rotation = Quaternion.Euler(0, 0, 180);
+        }
+    }
+
+#endregion
 }

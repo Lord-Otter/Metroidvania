@@ -16,7 +16,7 @@ public class PlayerVisualRotation : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         FaceTravelDirection();
     }

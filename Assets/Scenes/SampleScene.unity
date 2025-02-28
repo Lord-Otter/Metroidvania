@@ -589,8 +589,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TrackedObjectOffset: {x: 0, y: 0, z: 0}
-  m_LookaheadTime: 0
-  m_LookaheadSmoothing: 10
+  m_LookaheadTime: 0.1
+  m_LookaheadSmoothing: 15
   m_LookaheadIgnoreY: 0
   m_XDamping: 0.75
   m_YDamping: 1
@@ -808,9 +808,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3eb39dc05302fc4ab7d224f06534ed6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetPositionX: 1.5
+  targetPositionX: 1
   targetPositionY: 1
-  speed: 2
+  speedX: 7.5
+  speedY: 2
   yMovementOffset: 2
   yOffsetThreshold: 4
 --- !u!1 &705507993
@@ -1380,7 +1381,7 @@ MonoBehaviour:
   m_ShowCameraFrustum: 1
   m_IgnoreTimeScale: 0
   m_WorldUpOverride: {fileID: 0}
-  m_UpdateMethod: 2
+  m_UpdateMethod: 0
   m_BlendUpdateMethod: 1
   m_DefaultBlend:
     m_Style: 1
@@ -1567,14 +1568,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aimObject: {fileID: 0}
-  mouseAiming: 1
   coneAngle: 45
-  outerRadius: 5
-  innerRadius: 1
+  coneRadius: 5
+  rayCount: 7
   targetLayer:
     serializedVersion: 2
-    m_Bits: 4294967295
-  circleResolution: 36
+    m_Bits: 64
 --- !u!114 &1145036900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1629,18 +1628,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77fa74c8711f9634dbd85ae93bb7912f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rigidBody: {fileID: 0}
+  aimHorizontalR: 0
+  aimVerticalR: 0
+  aimHorizontalL: 0
+  aimVerticalL: 0
+  aimMode: 0
+  aimObject: {fileID: 0}
+  triggerAttack: 0
   moveHorizontal: 0
   moveVertical: 0
-  stickDeadZone: 0.2
   movingRight: 0
   movingLeft: 0
   jumping: 0
   highJumping: 0
   airJumping: 0
-  aimHorizontal: 0
-  aimVertical: 0
   attacking: 0
+  stickDeadZone: 0.2
+  inputHoldThreshold: 0.025
+  aimInputHoldThreshold: 0.025
 --- !u!114 &1145036904
 MonoBehaviour:
   m_ObjectHideFlags: 0

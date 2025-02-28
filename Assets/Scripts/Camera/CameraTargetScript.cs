@@ -9,7 +9,8 @@ public class CameraTargetScript : MonoBehaviour
 
     public float targetPositionX = 1.5f;
     public float targetPositionY = 2f;
-    public float speed = 5f;
+    public float speedX = 5f;
+    public float speedY = 5f;
     public float yMovementOffset = 2f;
     public float yOffsetThreshold = 4;
     Vector3 targetPosition;
@@ -29,12 +30,13 @@ public class CameraTargetScript : MonoBehaviour
 
     void MoveTarget()
     {
+        Vector3 targetPosition;
+
         if (playerVelocity.velocity.y > yOffsetThreshold || playerVelocity.velocity.y < -yOffsetThreshold)
         {
             targetPosition = playerChecks.isFacingRight
                 ? new Vector3(targetPositionX, targetPositionY + -yMovementOffset, 0f)
                 : new Vector3(-targetPositionX, targetPositionY + -yMovementOffset, 0);
-
         }
         else
         {
@@ -43,6 +45,10 @@ public class CameraTargetScript : MonoBehaviour
                 : new Vector3(-targetPositionX, targetPositionY, 0);
         }
 
-        transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPosition, Time.deltaTime * speed);
+        Vector3 newPosition = transform.localPosition;
+        newPosition.x = Mathf.MoveTowards(transform.localPosition.x, targetPosition.x, Time.deltaTime * speedX);
+        newPosition.y = Mathf.MoveTowards(transform.localPosition.y, targetPosition.y, Time.deltaTime * speedY);
+
+        transform.localPosition = newPosition;
     }
 }

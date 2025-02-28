@@ -12,16 +12,11 @@ public class AttackScript : MonoBehaviour
 
     public Transform aimObject;
 
-    public bool mouseAiming;
-
     // Raycast
     public float coneAngle = 45f;
-    public float outerRadius = 5f;
-    public float innerRadius = 1f;
+    public float coneRadius = 5f;
+    public int rayCount = 10;
     public LayerMask targetLayer;
-
-    // Circle Debug Settings
-    public int circleResolution = 36;
 
     void Start()
     {
@@ -34,124 +29,36 @@ public class AttackScript : MonoBehaviour
         aimObject = GameObject.Find("Attack_Direction").transform;
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        // Aim Attack
-        if (mouseAiming)
-        {
-            LookTowardMouse();
-        }
-        else
-        {
-            AimWithoutMouse();
-        }
-
         // Draw Rays
         if (playerInputScript.attacking)
         {
-            CastFanRay(transform.position, aimObject.right);
-            DrawDebugCircle(transform.position, outerRadius, Color.blue);
-            DrawDebugCircle(transform.position, innerRadius, Color.cyan);
+            CastConeRay(transform.position, aimObject.right);
         }
     }
 
-    void LookTowardMouse()
-    {
-        Vector3 mouseScreenPosition = Input.mousePosition;
-
-        Ray ray = Camera.main.ScreenPointToRay(mouseScreenPosition);
-        Plane plane = new Plane(Vector3.forward, Vector3.zero);
-        float distance;
-
-        if (plane.Raycast(ray, out distance))
-        {
-            Vector3 worldMousePosition = ray.GetPoint(distance);
-            Vector3 direction = worldMousePosition - transform.position;
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
-            aimObject.rotation = Quaternion.Euler(0, 0, angle);
-        }
-    }
-
-    void AimWithoutMouse()
-    {
-        Vector3 inputDirection = new Vector3(playerInputScript.aimHorizontal, playerInputScript.aimVertical, 0f).normalized;
-
-        if (inputDirection.magnitude > 0f)
-        {
-            float angle = Mathf.Atan2(inputDirection.y, inputDirection.x) * Mathf.Rad2Deg;
-            aimObject.rotation = Quaternion.Euler(0, 0, angle);
-        }
-        else if (playerChecks.isFacingRight)
-        {
-            aimObject.rotation = Quaternion.Euler(0, 0, 0);
-        }
-        else
-        {
-            aimObject.rotation = Quaternion.Euler(0, 0, 180);
-        }
-    }
-
-    void CastFanRay(Vector3 origin, Vector3 direction)
+    void CastConeRay(Vector3 origin, Vector3 direction)
     {
         float halfAngle = coneAngle / 2f;
 
-        Vector3 leftRayDirection = Quaternion.Euler(0, 0, -halfAngle) * direction;
-        Vector3 rightRayDirection = Quaternion.Euler(0, 0, halfAngle) * direction;
-
-        CastSingleRay(origin, leftRayDirection, outerRadius);
-        CastSingleRay(origin, rightRayDirection, outerRadius);
-
-        CastCircle(origin, outerRadius);
-        CastCircle(origin, innerRadius);
-    }
-
-    void CastSingleRay(Vector3 origin, Vector3 direction, float length)
-    {
-        RaycastHit2D hit = Physics2D.Raycast(origin, direction, length, targetLayer);
-
-        if (hit.collider != null)
+        for (int i = 0; i < rayCount; i++)
         {
-            Debug.DrawLine(origin, hit.point, Color.red, 0.5f);
-            Debug.Log("Edge Ray Hit: " + hit.collider.name);
-        }
-        else
-        {
-            Debug.DrawRay(origin, direction * length, Color.green, 0.5f);
-        }
-    }
+            float angle = -halfAngle + (i / (float)(rayCount - 1)) * coneAngle;
+            Vector3 rayDirection = Quaternion.Euler(0, 0, angle) * direction;
 
-    void CastCircle(Vector3 origin, float radius)
-    {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, radius, targetLayer);
+            Debug.DrawRay(origin, rayDirection * coneRadius, Color.green, 0.5f);
 
-        foreach (Collider2D hit in hits)
-        {
-            float distance = Vector2.Distance(origin, hit.transform.position);
-            Vector3 directionToTarget = (hit.transform.position - origin).normalized;
+            RaycastHit[] hits = Physics.RaycastAll(origin, rayDirection, coneRadius, targetLayer);
 
-            float angle = Vector3.Angle(aimObject.right, directionToTarget);
-            if (angle <= coneAngle / 2 && distance >= innerRadius)
+            if (hits.Length > 0)
             {
-                Debug.Log("Circle Hit: " + hit.name);
+                foreach (RaycastHit hit in hits)
+                {
+                    Debug.DrawLine(origin, hit.point, Color.red, 0.5f);
+                    Debug.Log("Hit: " + hit.collider.name);
+                }
             }
-        }
-    }
-
-    void DrawDebugCircle(Vector3 origin, float radius, Color color)
-    {
-        int segments = circleResolution;
-        float angleStep = 360f / segments;
-        Vector3 lastPoint = origin + (aimObject.right * radius);
-
-        for (int i = 1; i <= segments; i++)
-        {
-            float angle = angleStep * i;
-            float rad = Mathf.Deg2Rad * angle;
-            Vector3 newPoint = origin + (Mathf.Cos(rad) * aimObject.right + Mathf.Sin(rad) * aimObject.up) * radius;
-
-            Debug.DrawLine(lastPoint, newPoint, color, 0.5f);
-            lastPoint = newPoint;
         }
     }
 }
