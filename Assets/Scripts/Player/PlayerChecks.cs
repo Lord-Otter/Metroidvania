@@ -12,11 +12,6 @@ public class PlayerChecks : MonoBehaviour
 
     public bool isFacingRight;
 
-    // Test
-    private float directionChangeTime = 0f;
-    private float requiredHoldTime = 0.025f; // Time in seconds
-    private bool lastMovingRight = true; // Stores last movement direction
-
     // Start is called before the first frame update
     void Start()
     {
