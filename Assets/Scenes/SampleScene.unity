@@ -1603,7 +1603,7 @@ MonoBehaviour:
   aimVerticalR: 0
   aimHorizontalL: 0
   aimVerticalL: 0
-  aimMode: 0
+  aimMode: 2
   aimObject: {fileID: 0}
   moveHorizontal: 0
   moveVertical: 0
