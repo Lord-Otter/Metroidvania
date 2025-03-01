@@ -45,8 +45,13 @@ public class AttackScript : MonoBehaviour
     {
         if (playerInputScript.attacking)
         {
-            
+            AttackFunction();
         }
+    }
+
+    void AttackFunction()
+    {
+        
     }
 
     void MoveAttackTrigger()
@@ -54,7 +59,10 @@ public class AttackScript : MonoBehaviour
         if (playerInputScript == null) return;
 
         float aimAngle = playerInputScript.aimObject.rotation.eulerAngles.z;
-        float[] angles = { 0, 45, 90, 135, 180, 225, 270, 315 };
+        float[] angles = {  0, 22.5f, 45, 67.5f, 90, 112.5f, 135, 157.5f, 180, 
+                            225,    // Down left
+                            270,    // Down down
+                            315 };  //Down Right
 
         float closestAngle = angles[0];
         float smallestDifference = Mathf.Abs(Mathf.DeltaAngle(aimAngle, closestAngle));
@@ -69,11 +77,23 @@ public class AttackScript : MonoBehaviour
                 closestAngle = angle;
             }
         }
-        if(closestAngle == 315 || closestAngle == 270 || closestAngle == 225)
+        if(closestAngle == 225) // Down left
         {
             atkColliderTrigger.offset = new Vector2(downXOffset, downYOffset);
             atkColliderTrigger.size = new Vector2(downWidth, downHeight);
-            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, 270);
+            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+        }
+        else if(closestAngle == 270) // Down down
+        {
+            atkColliderTrigger.offset = new Vector2(downXOffset, downYOffset);
+            atkColliderTrigger.size = new Vector2(downWidth, downHeight);
+            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+        }
+        else if(closestAngle == 315) //Down right
+        {
+            atkColliderTrigger.offset = new Vector2(downXOffset, downYOffset);
+            atkColliderTrigger.size = new Vector2(downWidth, downHeight);
+            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
         }
         else
         {
