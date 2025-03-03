@@ -270,7 +270,7 @@ Transform:
   m_GameObject: {fileID: 107391544}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 15.5, y: 5, z: -15}
+  m_LocalPosition: {x: 15, y: 4, z: -15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -790,7 +790,7 @@ Transform:
   m_GameObject: {fileID: 517406980}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.5, y: 2, z: 0}
+  m_LocalPosition: {x: 1, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -808,6 +808,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3eb39dc05302fc4ab7d224f06534ed6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mouseAimWeightX: 0.5
+  mouseAimWeightY: 0.3
+  mouseAimMaxX: 2.5
+  mouseAimMaxY: 2
   targetPositionX: 1
   targetPositionY: 1
   speedX: 7.5
@@ -1359,7 +1363,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 15.5, y: 5, z: -15}
+  m_LocalPosition: {x: 15, y: 4, z: -15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1537,14 +1541,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ec1bf78dd62d6d438a4cafb4a5f651a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultXOffset: 2
+  defaultXOffset: 1.5
   defaultYOffset: 0
-  defaultWidth: 4
-  defaultHeight: 2.5
+  defaultWidth: 3
+  defaultHeight: 2.25
   downXOffset: 1.25
   downYOffset: 0
-  downWidth: 2.5
-  downHeight: 3.5
+  downWidth: 3
+  downHeight: 3
 --- !u!114 &1145036900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1599,12 +1603,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77fa74c8711f9634dbd85ae93bb7912f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  aimMode: 0
+  aimObject: {fileID: 0}
   aimHorizontalR: 0
   aimVerticalR: 0
   aimHorizontalL: 0
   aimVerticalL: 0
-  aimMode: 0
-  aimObject: {fileID: 0}
+  inputDirectionR: {x: 0, y: 0, z: 0}
+  mousePosition: {x: 0, y: 0, z: 0}
   moveHorizontal: 0
   moveVertical: 0
   movingRight: 0
@@ -1628,6 +1634,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9756e3bb00a617439995bfeb4cab47c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rotateMode: 0
   isFacingRight: 1
 --- !u!114 &1145036905
 MonoBehaviour:
@@ -2033,7 +2040,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 2, y: 0}
+  m_Offset: {x: 1.5, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -2044,7 +2051,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 4, y: 2.5}
+  m_Size: {x: 3, y: 2.25}
   m_EdgeRadius: 0
 --- !u!1 &1658178356
 GameObject:

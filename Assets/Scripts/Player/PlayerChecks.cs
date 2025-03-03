@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using static PlayerInputScript;
 
 public class PlayerChecks : MonoBehaviour
 {
@@ -10,6 +12,9 @@ public class PlayerChecks : MonoBehaviour
     private PlayerInputScript playerInputScript;
     private PlayerVelocity playerVelocity;
 
+    public enum RotateMode { Aim, Movement }
+    [Header("Player Orientation")]
+    public RotateMode rotateMode;
     public bool isFacingRight;
 
     // Start is called before the first frame update
@@ -27,9 +32,9 @@ public class PlayerChecks : MonoBehaviour
     {        
         if ((playerInputScript.movingRight && !playerInputScript.movingLeft && !dashScript.isDashing) || (!playerInputScript.movingRight && playerInputScript.movingLeft && !dashScript.isDashing))
         {
-            IsFacingRight();
+            //IsFacingRight();
         }
-
+        IsFacingRight();
     }
 
     public bool IsGrounded()
@@ -71,12 +76,56 @@ public class PlayerChecks : MonoBehaviour
         return hit1 || hit2;
     }
 
-    /*public bool CanGroundJump()
-    {
-        return CanGroundJump;
-    }*/
-
     void IsFacingRight()
+    {
+        RotateModeFunctions();
+    }
+
+    void RotateModeFunctions()
+    {
+        switch (rotateMode)
+        {
+            case RotateMode.Aim:
+                RotateAim();
+                break;
+            case RotateMode.Movement:
+                RotateMove();
+                break;
+        }
+    }
+
+    void RotateAim()
+    {
+        float aimAngle = playerInputScript.aimObject.rotation.eulerAngles.z;
+        if(playerInputScript.inputDirectionR.magnitude == 0 && playerInputScript.aimMode == AimMode.Stick)
+        {
+            if (playerInputScript.movingRight && !playerInputScript.movingLeft)
+            {
+                isFacingRight = true;
+            }
+            else if (!playerInputScript.movingRight && playerInputScript.movingLeft)
+            {
+                isFacingRight = false;
+            }
+        }
+        else
+        {
+            if (aimAngle < 90 || aimAngle > 270)
+            {
+                isFacingRight = true;
+            }
+            else if (aimAngle == 90 || aimAngle == 270)
+            {
+
+            }
+            else
+            {
+                isFacingRight = false;
+            }
+        }
+    }
+
+    void RotateMove()
     {
         if (playerInputScript.movingRight && !playerInputScript.movingLeft)
         {

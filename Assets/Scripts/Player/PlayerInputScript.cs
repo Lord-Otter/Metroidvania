@@ -11,18 +11,19 @@ public class PlayerInputScript : MonoBehaviour
     private DashScript dashScript;
     private PlayerChecks playerChecks;
     private PlayerVelocity playerVelocity;
+    
+    public enum AimMode { Mouse, Stick, Move }
+    [Header("Aiming Mode")]
+    public AimMode aimMode;
+    public Transform aimObject;
 
     [Header("Aiming")]
     public float aimHorizontalR;
     public float aimVerticalR;
     public float aimHorizontalL;
     public float aimVerticalL;
-
-    
-    public enum AimMode { Mouse, Stick, Move }
-    [Header("Aiming Mode")]
-    public AimMode aimMode;
-    public Transform aimObject;
+    public Vector3 inputDirectionR;
+    public Vector3 mousePosition;
 
     [Header("Movement")]
     public float moveHorizontal;
@@ -197,8 +198,8 @@ public class PlayerInputScript : MonoBehaviour
         if (plane.Raycast(ray, out distance))
         {
             Vector3 worldMousePosition = ray.GetPoint(distance);
-            Vector3 direction = worldMousePosition - transform.position;
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            mousePosition = worldMousePosition - transform.position;
+            float angle = Mathf.Atan2(mousePosition.y, mousePosition.x) * Mathf.Rad2Deg;
 
             aimObject.rotation = Quaternion.Euler(0, 0, angle);
         }
@@ -206,7 +207,7 @@ public class PlayerInputScript : MonoBehaviour
 
     void StickAim()
     {
-        Vector3 inputDirectionR = new Vector3(aimHorizontalR, aimVerticalR, 0f).normalized;
+        inputDirectionR = new Vector3(aimHorizontalR, aimVerticalR, 0f).normalized;
 
         if (inputDirectionR.magnitude > 0f)
         {
