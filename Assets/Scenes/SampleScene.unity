@@ -808,10 +808,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3eb39dc05302fc4ab7d224f06534ed6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mouseAimWeightX: 0.5
-  mouseAimWeightY: 0.3
-  mouseAimMaxX: 2.5
-  mouseAimMaxY: 2
+  mouseCamMultiplier: 0.1
+  xMax: 5
+  yMax: 5
   targetPositionX: 1
   targetPositionY: 1
   speedX: 7.5
@@ -1561,7 +1560,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4932314b6a9fc3146ab95277092d1a7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputDash: 0
   dashSpeed: 25
   dashRange: 6
   dashCooldown: 0.5
@@ -1618,6 +1616,7 @@ MonoBehaviour:
   jumping: 0
   highJumping: 0
   airJumping: 0
+  dashing: 0
   attacking: 0
   stickDeadZone: 0.2
   inputHoldThreshold: 0.025

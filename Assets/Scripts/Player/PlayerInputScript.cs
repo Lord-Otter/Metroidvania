@@ -34,6 +34,7 @@ public class PlayerInputScript : MonoBehaviour
     public bool jumping;
     public bool highJumping;
     public bool airJumping;
+    public bool dashing;
 
     [Header("Attacks")]
     public bool attacking;
@@ -163,7 +164,7 @@ public class PlayerInputScript : MonoBehaviour
         highJumping = Input.GetButton("Jump");
 
         // Special Moves
-        dashScript.inputDash = Input.GetButton("Dash");
+        dashing = Input.GetButton("Dash");
 
         // Attack
         attacking = (aimMode == AimMode.Stick) 

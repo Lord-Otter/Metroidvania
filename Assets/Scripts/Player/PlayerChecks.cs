@@ -29,12 +29,11 @@ public class PlayerChecks : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {        
-        if ((playerInputScript.movingRight && !playerInputScript.movingLeft && !dashScript.isDashing) || (!playerInputScript.movingRight && playerInputScript.movingLeft && !dashScript.isDashing))
-        {
-            //IsFacingRight();
+    {       
+        if(!dashScript.isDashing)
+        { 
+            IsFacingRight();
         }
-        IsFacingRight();
     }
 
     public bool IsGrounded()

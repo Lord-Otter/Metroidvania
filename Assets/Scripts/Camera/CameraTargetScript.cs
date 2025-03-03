@@ -10,10 +10,9 @@ public class CameraTargetScript : MonoBehaviour
     private PlayerVelocity playerVelocity;
 
     [Header("Mouse Camera Behaviour")]
-    public float mouseAimWeightX = 0.5f;
-    public float mouseAimWeightY = 0.3f;
-    public float mouseAimMaxX = 2.5f;
-    public float mouseAimMaxY = 2f;
+    public float mouseCamMultiplier = 0.1f;
+    public int xMax = 50;
+    public int yMax = 50;
 
     [Header("Movement Camera Behaviour")]
     public float targetPositionX = 1.5f;
@@ -68,18 +67,12 @@ public class CameraTargetScript : MonoBehaviour
             targetPosition.x = playerInputScript.mousePosition.x;
 
             Vector3 newPosition = transform.localPosition;
+                
+            newPosition.x = targetPosition.x * mouseCamMultiplier;
+            newPosition.y = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
 
-            newPosition.x = targetPosition.x > mouseAimMaxX
-                ? mouseAimMaxX
-                : targetPosition.x < -mouseAimMaxX
-                ? -mouseAimMaxX
-                : targetPosition.x;
-
-            newPosition.y = targetPosition.y > mouseAimMaxY
-                ? mouseAimMaxY
-                : targetPosition.y < -mouseAimMaxY
-                ? -mouseAimMaxY
-                : targetPosition.y;
+            newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
+            newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);           
 
             transform.localPosition = newPosition;
             

@@ -10,7 +10,6 @@ public class DashScript : MonoBehaviour
     private PlayerInputScript playerInputScript;
     private PlayerVelocity playerVelocity;
 
-    public bool inputDash;
     public float dashSpeed;
     public float dashRange;
     public float dashCooldown;
@@ -19,6 +18,7 @@ public class DashScript : MonoBehaviour
     private bool dashGroundReset;
     private float dashStartTime;
     public bool isDashing = false;
+    private float dashDirection;
 
     // Start is called before the first frame update
     void Start()
@@ -43,98 +43,55 @@ public class DashScript : MonoBehaviour
         DashExecution();
     }
 
-    void DashExecution()
+void DashExecution()
+{
+    playerVelocity.velocity = playerVelocity.rigidBody.velocity;
+
+    if (playerChecks.IsGrounded())
     {
-        playerVelocity.velocity = playerVelocity.rigidBody.velocity;
-
-        if (playerChecks.IsGrounded())
-        {
-            dashGroundReset = true;
-        }
-
-        if (dashCooldownReset && dashGroundReset)
-        {
-            canDash = true;
-        }
-
-        if(inputDash && canDash)
-        {
-            dashStartTime = Time.time;
-            dashCooldownReset = false;
-            dashGroundReset = false;
-            canDash = false;
-            isDashing = true;
-        }
-
-        if (isDashing && (playerChecks.rotateMode == PlayerChecks.RotateMode.Movement))
-        {
-            playerVelocity.velocity.y = 0;
-            playerVelocity.velocity.x = playerChecks.isFacingRight ? dashSpeed : -dashSpeed;
-
-            float dashDuration = dashRange / dashSpeed;
-
-            // Dash Duration
-            if (((Time.time - dashStartTime) > dashDuration) && playerChecks.isFacingRight)
-            {
-                playerVelocity.velocity.x = basicMovementScript.maxMoveSpeed;
-                StartCoroutine(DashCooldown());
-                isDashing = false;
-            }
-            else if (((Time.time - dashStartTime) > dashDuration) && !playerChecks.isFacingRight)
-            {
-                playerVelocity.velocity.x = -basicMovementScript.maxMoveSpeed;
-                StartCoroutine(DashCooldown());
-                isDashing = false;
-            }
-        }
-        else if (isDashing && (playerChecks.rotateMode == PlayerChecks.RotateMode.Aim))
-        {
-            if (!playerInputScript.movingRight && !playerInputScript.movingLeft)
-            {
-                playerVelocity.velocity.y = 0;
-                playerVelocity.velocity.x = playerChecks.isFacingRight ? dashSpeed : -dashSpeed;
-
-                float dashDuration = dashRange / dashSpeed;
-
-                // Dash Duration
-                if (((Time.time - dashStartTime) > dashDuration) && playerChecks.isFacingRight)
-                {
-                    playerVelocity.velocity.x = basicMovementScript.maxMoveSpeed;
-                    StartCoroutine(DashCooldown());
-                    isDashing = false;
-                }
-                else if (((Time.time - dashStartTime) > dashDuration) && !playerChecks.isFacingRight)
-                {
-                    playerVelocity.velocity.x = -basicMovementScript.maxMoveSpeed;
-                    StartCoroutine(DashCooldown());
-                    isDashing = false;
-                }
-            }
-            else
-            {
-                playerVelocity.velocity.y = 0;
-                playerVelocity.velocity.x = playerInputScript.movingRight ? dashSpeed : -dashSpeed;
-
-                float dashDuration = dashRange / dashSpeed;
-
-                // Dash Duration
-                if (((Time.time - dashStartTime) > dashDuration) && playerInputScript.movingRight)
-                {
-                    playerVelocity.velocity.x = basicMovementScript.maxMoveSpeed;
-                    StartCoroutine(DashCooldown());
-                    isDashing = false;
-                }
-                else if (((Time.time - dashStartTime) > dashDuration) && playerInputScript.movingLeft)
-                {
-                    playerVelocity.velocity.x = -basicMovementScript.maxMoveSpeed;
-                    StartCoroutine(DashCooldown());
-                    isDashing = false;
-                }
-            }
-        }
-
-        playerVelocity.rigidBody.velocity = playerVelocity.velocity;
+        dashGroundReset = true;
     }
+
+    if (dashCooldownReset && dashGroundReset)
+    {
+        canDash = true;
+    }
+
+    if (playerInputScript.dashing && canDash)
+    {
+        dashStartTime = Time.time;
+        dashCooldownReset = false;
+        dashGroundReset = false;
+        canDash = false;
+        isDashing = true;
+        if(!playerInputScript.movingRight && !playerInputScript.movingLeft)
+        {
+            dashDirection = playerChecks.isFacingRight ? 1f : -1f;
+        }
+        else
+        {
+            dashDirection = playerInputScript.movingRight ? 1f : -1f;
+        }
+    }
+
+    if (isDashing)
+    {
+        playerVelocity.velocity.y = 0;
+        playerVelocity.velocity.x = dashDirection * dashSpeed;
+
+        float dashDuration = dashRange / dashSpeed;
+
+        // Dash Duration
+        if ((Time.time - dashStartTime) > dashDuration)
+        {
+            playerVelocity.velocity.x = dashDirection * basicMovementScript.maxMoveSpeed;
+            StartCoroutine(DashCooldown());
+            isDashing = false;
+        }
+    }
+
+    playerVelocity.rigidBody.velocity = playerVelocity.velocity;
+}
 
     IEnumerator DashCooldown()
     {
