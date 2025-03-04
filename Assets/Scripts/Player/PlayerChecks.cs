@@ -2,14 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using static PlayerInputScript;
+using static PlayerInputs;
 
 public class PlayerChecks : MonoBehaviour
 {
     private AttackScript attackScript;
-    private BasicMovementScript basicMovementScript;
-    private DashScript dashScript;
-    private PlayerInputScript playerInputScript;
+    private PlayerMovement playerMovement;
+    private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
 
     public enum RotateMode { Aim, Movement }
@@ -17,20 +16,23 @@ public class PlayerChecks : MonoBehaviour
     public RotateMode rotateMode;
     public bool isFacingRight;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         attackScript = GetComponent<AttackScript>();
-        basicMovementScript = GetComponent<BasicMovementScript>();
-        dashScript = GetComponent<DashScript>();
-        playerInputScript = GetComponent<PlayerInputScript>();
+        playerMovement = GetComponent<PlayerMovement>();
+        playerInputs = GetComponent<PlayerInputs>();
         playerVelocity = GetComponent<PlayerVelocity>();
+    }
+
+    void Start()
+    {
+
     }
 
     // Update is called once per frame
     void Update()
     {       
-        if(!dashScript.isDashing)
+        if(!playerMovement.isDashing)
         { 
             IsFacingRight();
         }
@@ -95,14 +97,14 @@ public class PlayerChecks : MonoBehaviour
 
     void RotateAim()
     {
-        float aimAngle = playerInputScript.aimObject.rotation.eulerAngles.z;
-        if(playerInputScript.inputDirectionR.magnitude == 0 && playerInputScript.aimMode == AimMode.Stick)
+        float aimAngle = playerInputs.aimObject.rotation.eulerAngles.z;
+        if(playerInputs.inputDirectionR.magnitude == 0 && playerInputs.aimMode == AimMode.Stick)
         {
-            if (playerInputScript.movingRight && !playerInputScript.movingLeft)
+            if (playerInputs.movingRight && !playerInputs.movingLeft)
             {
                 isFacingRight = true;
             }
-            else if (!playerInputScript.movingRight && playerInputScript.movingLeft)
+            else if (!playerInputs.movingRight && playerInputs.movingLeft)
             {
                 isFacingRight = false;
             }
@@ -126,11 +128,11 @@ public class PlayerChecks : MonoBehaviour
 
     void RotateMove()
     {
-        if (playerInputScript.movingRight && !playerInputScript.movingLeft)
+        if (playerInputs.movingRight && !playerInputs.movingLeft)
         {
             isFacingRight = true;
         }
-        else if (!playerInputScript.movingRight && playerInputScript.movingLeft)
+        else if (!playerInputs.movingRight && playerInputs.movingLeft)
         {
             isFacingRight = false;
         }

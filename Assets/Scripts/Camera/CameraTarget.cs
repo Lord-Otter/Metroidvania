@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static PlayerInputScript;
+using static PlayerInputs;
 
 public class CameraTargetScript : MonoBehaviour
 {
     private PlayerChecks playerChecks;
-    private PlayerInputScript playerInputScript;
+    private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
 
     [Header("Mouse Camera Behaviour")]
@@ -23,12 +23,16 @@ public class CameraTargetScript : MonoBehaviour
     public float yOffsetThreshold = 4;
     private Vector3 targetPosition;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         playerChecks = GetComponentInParent<PlayerChecks>();
-        playerInputScript = GetComponentInParent<PlayerInputScript>();
+        playerInputs = GetComponentInParent<PlayerInputs>();
         playerVelocity = GetComponentInParent<PlayerVelocity>();
+    }
+
+    void Start()
+    {
+
     }
 
     // Update is called once per frame
@@ -39,7 +43,7 @@ public class CameraTargetScript : MonoBehaviour
 
     void MoveTarget()
     {
-        if (playerInputScript.aimMode == AimMode.Stick || playerInputScript.aimMode == AimMode.Move)
+        if (playerInputs.aimMode == AimMode.Stick || playerInputs.aimMode == AimMode.Move)
         {
             if (playerVelocity.velocity.y > yOffsetThreshold || playerVelocity.velocity.y < -yOffsetThreshold)
             {
@@ -61,10 +65,10 @@ public class CameraTargetScript : MonoBehaviour
 
             transform.localPosition = newPosition;
         }
-        else if (playerInputScript.aimMode == AimMode.Mouse)
+        else if (playerInputs.aimMode == AimMode.Mouse)
         {
-            targetPosition = new Vector3(playerInputScript.mousePosition.x, playerInputScript.mousePosition.y, 0);
-            targetPosition.x = playerInputScript.mousePosition.x;
+            targetPosition = new Vector3(playerInputs.mousePosition.x, playerInputs.mousePosition.y, 0);
+            targetPosition.x = playerInputs.mousePosition.x;
 
             Vector3 newPosition = transform.localPosition;
                 

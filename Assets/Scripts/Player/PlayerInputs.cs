@@ -4,26 +4,25 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements.Experimental;
 
-public class PlayerInputScript : MonoBehaviour
+public class PlayerInputs : MonoBehaviour
 {
     private AttackScript attackScript;
-    private BasicMovementScript basicMovementScript;
-    private DashScript dashScript;
+    private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
     private PlayerVelocity playerVelocity;
     
     public enum AimMode { Mouse, Stick, Move }
     [Header("Aiming Mode")]
     public AimMode aimMode;
-    public Transform aimObject;
+    [HideInInspector] public Transform aimObject;
 
     [Header("Aiming")]
     public float aimHorizontalR;
     public float aimVerticalR;
     public float aimHorizontalL;
     public float aimVerticalL;
-    public Vector3 inputDirectionR;
-    public Vector3 mousePosition;
+    [HideInInspector] public Vector3 inputDirectionR;
+    [HideInInspector] public Vector3 mousePosition;
 
     [Header("Movement")]
     public float moveHorizontal;
@@ -50,28 +49,37 @@ public class PlayerInputScript : MonoBehaviour
     private bool isHoldingAimInput = false;
     public float aimInputHoldThreshold = 0.025f; // Delay threshold for aiming
 
-    void Start()
+    private void Awake()
     {
         attackScript = GetComponent<AttackScript>();
-        basicMovementScript = GetComponent<BasicMovementScript>();
-        dashScript = GetComponent<DashScript>();
+        playerMovement = GetComponent<PlayerMovement>();
         playerChecks = GetComponent<PlayerChecks>();
         playerVelocity = GetComponent<PlayerVelocity>();
 
         aimObject = GameObject.Find("Attack_Direction").transform;
     }
 
+    void Start()
+    {
+
+    }
+
     void Update()
     {
         Controls();
+
+        if (attackScript.canAimAttack) 
+        {
+            AimModeFunction();
+        }
     }
 
     void FixedUpdate()
     {
-        // Aim Mode
-        AimModeFunction();
+        
     }
 
+    #region Inputs
     void Controls()
     {
         float horizontalInput = Input.GetAxisRaw("Horizontal");
@@ -151,11 +159,11 @@ public class PlayerInputScript : MonoBehaviour
         // Jumping
         if (Input.GetButtonDown("Jump"))
         {
-            if (basicMovementScript.canGroundJump && !dashScript.isDashing)
+            if (playerMovement.canGroundJump && !playerMovement.isDashing)
             {
                 jumping = true;
             }
-            else if (!basicMovementScript.canGroundJump && !dashScript.isDashing && (basicMovementScript.airJumps > 0))
+            else if (!playerMovement.canGroundJump && !playerMovement.isDashing && (playerMovement.airJumps > 0))
             {
                 airJumping = true;
             }
@@ -171,7 +179,9 @@ public class PlayerInputScript : MonoBehaviour
         ? Input.GetAxisRaw("TriggerAttack") > 0.1f 
         : Input.GetButton("ButtonAttack");
     }
- #region Aiming Types
+    #endregion
+
+    #region Aiming
     void AimModeFunction()
     {
         switch (aimMode)

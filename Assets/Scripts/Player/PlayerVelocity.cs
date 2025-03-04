@@ -5,29 +5,31 @@ using UnityEngine;
 public class PlayerVelocity : MonoBehaviour
 {
     private AttackScript attackScript;
-    private BasicMovementScript basicMovementScript;
-    private DashScript dashScript;
+    private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
-    private PlayerInputScript playerInputScript;
+    private PlayerInputs playerInputs;
 
-    public Rigidbody rigidBody;
-    public Vector3 velocity;
+    [HideInInspector] public Rigidbody rigidBody;
+    [HideInInspector] public Vector3 velocity;
 
     // Physics
     public float gravity = 15f;
     public float jumpGravity = 10f;
     public float maxFallSpeed = 20f;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         attackScript = GetComponent<AttackScript>();
-        basicMovementScript = GetComponent<BasicMovementScript>();
-        dashScript = GetComponent<DashScript>();
+        playerMovement = GetComponent<PlayerMovement>();
         playerChecks = GetComponent<PlayerChecks>();
-        playerInputScript = GetComponent<PlayerInputScript>();
+        playerInputs = GetComponent<PlayerInputs>();
 
         rigidBody = GetComponent<Rigidbody>();
+    }
+
+    void Start()
+    {
+
     }
 
     // Update is called once per frame
@@ -40,12 +42,12 @@ public class PlayerVelocity : MonoBehaviour
     {
         velocity = rigidBody.velocity;
 
-        if (!dashScript.isDashing &&  (playerInputScript.highJumping && velocity.y > 0))
+        if (!playerMovement.isDashing &&  (playerInputs.highJumping && velocity.y > 0))
         {
             velocity.y -= jumpGravity * Time.fixedDeltaTime;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
-        else if (!dashScript.isDashing)
+        else if (!playerMovement.isDashing)
         {
             velocity.y -= gravity * Time.fixedDeltaTime;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);

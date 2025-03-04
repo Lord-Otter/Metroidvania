@@ -5,9 +5,9 @@ using UnityEngine;
 public class DashScript : MonoBehaviour
 {
     private AttackScript attackScript;
-    private BasicMovementScript basicMovementScript;
+    private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
-    private PlayerInputScript playerInputScript;
+    private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
 
     public float dashSpeed;
@@ -20,15 +20,17 @@ public class DashScript : MonoBehaviour
     public bool isDashing = false;
     private float dashDirection;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         attackScript = GetComponent<AttackScript>();
-        basicMovementScript = GetComponent<BasicMovementScript>();
+        playerMovement = GetComponent<PlayerMovement>();
         playerChecks = GetComponent<PlayerChecks>();
-        playerInputScript = GetComponent<PlayerInputScript>();
+        playerInputs = GetComponent<PlayerInputs>();
         playerVelocity = GetComponent<PlayerVelocity>();
+    }
 
+    void Start()
+    {
         StartCoroutine(DashCooldown());
     }
 
@@ -43,55 +45,55 @@ public class DashScript : MonoBehaviour
         DashExecution();
     }
 
-void DashExecution()
-{
-    playerVelocity.velocity = playerVelocity.rigidBody.velocity;
-
-    if (playerChecks.IsGrounded())
+    void DashExecution()
     {
-        dashGroundReset = true;
-    }
+        playerVelocity.velocity = playerVelocity.rigidBody.velocity;
 
-    if (dashCooldownReset && dashGroundReset)
-    {
-        canDash = true;
-    }
-
-    if (playerInputScript.dashing && canDash)
-    {
-        dashStartTime = Time.time;
-        dashCooldownReset = false;
-        dashGroundReset = false;
-        canDash = false;
-        isDashing = true;
-        if(!playerInputScript.movingRight && !playerInputScript.movingLeft)
+        if (playerChecks.IsGrounded())
         {
-            dashDirection = playerChecks.isFacingRight ? 1f : -1f;
+            dashGroundReset = true;
         }
-        else
+
+        if (dashCooldownReset && dashGroundReset)
         {
-            dashDirection = playerInputScript.movingRight ? 1f : -1f;
+            canDash = true;
         }
-    }
 
-    if (isDashing)
-    {
-        playerVelocity.velocity.y = 0;
-        playerVelocity.velocity.x = dashDirection * dashSpeed;
-
-        float dashDuration = dashRange / dashSpeed;
-
-        // Dash Duration
-        if ((Time.time - dashStartTime) > dashDuration)
+        if (playerInputs.dashing && canDash)
         {
-            playerVelocity.velocity.x = dashDirection * basicMovementScript.maxMoveSpeed;
-            StartCoroutine(DashCooldown());
-            isDashing = false;
+            dashStartTime = Time.time;
+            dashCooldownReset = false;
+            dashGroundReset = false;
+            canDash = false;
+            isDashing = true;
+            if(!playerInputs.movingRight && !playerInputs.movingLeft)
+            {
+                dashDirection = playerChecks.isFacingRight ? 1f : -1f;
+            }
+            else
+            {
+                dashDirection = playerInputs.movingRight ? 1f : -1f;
+            }
         }
-    }
 
-    playerVelocity.rigidBody.velocity = playerVelocity.velocity;
-}
+        if (isDashing)
+        {
+            playerVelocity.velocity.y = 0;
+            playerVelocity.velocity.x = dashDirection * dashSpeed;
+
+            float dashDuration = dashRange / dashSpeed;
+
+            // Dash Duration
+            if ((Time.time - dashStartTime) > dashDuration)
+            {
+                playerVelocity.velocity.x = dashDirection * playerMovement.maxMoveSpeed;
+                StartCoroutine(DashCooldown());
+                isDashing = false;
+            }
+        }
+
+        playerVelocity.rigidBody.velocity = playerVelocity.velocity;
+    }
 
     IEnumerator DashCooldown()
     {

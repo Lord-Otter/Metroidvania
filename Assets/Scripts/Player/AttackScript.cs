@@ -1,19 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class AttackScript : MonoBehaviour
 {
-    private BasicMovementScript basicMovementScript;
-    private DashScript dashScript;
+    [Header("Player Components")]
+    private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
-    private PlayerInputScript playerInputScript;
+    private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
 
+    [Header("Player Attack")]
+    public int attackDamage;
+    public float attackBuildUpTime;
+    public float damageDuration;
+    public float attackResetTime;
+    public float enemyKnockBack;
+    public float playerKnockBack;
+    public bool canAttack = true;
+    [HideInInspector]public bool canAimAttack = true;
+    [SerializeField] private LayerMask attackableLayers;
+    public List<GameObject> hitTargets = new List<GameObject>();
+
+    private BoxCollider attackTrigger;
     [Header("Collider")]
-    private Transform atkDirection;
-    private Transform atkColliderTransform;
-    private BoxCollider2D atkColliderTrigger;
     public float defaultXOffset;
     public float defaultYOffset;
     public float defaultWidth;
@@ -22,43 +33,121 @@ public class AttackScript : MonoBehaviour
     public float downYOffset;
     public float downWidth;
     public float downHeight;
+    private float triggerDepth = 3;
+
+    [Header("Testing")]
+    private Renderer aimStickRenderer;
+
+
+    private void Awake()
+    {
+        // Player Components
+        playerMovement = GetComponent<PlayerMovement>();
+        playerChecks = GetComponent<PlayerChecks>();
+        playerInputs = GetComponent<PlayerInputs>();
+        playerVelocity = GetComponent<PlayerVelocity>();
+
+        attackTrigger = GetComponentInChildren<BoxCollider>();
+
+        // Testing
+        aimStickRenderer = GameObject.Find("Attack_Direction_Visual").GetComponent<Renderer>();
+    }
 
     void Start()
     {
-        basicMovementScript = GetComponent<BasicMovementScript>();
-        dashScript = GetComponent<DashScript>();
-        playerChecks = GetComponent<PlayerChecks>();
-        playerInputScript = GetComponent<PlayerInputScript>();
-        playerVelocity = GetComponent<PlayerVelocity>();
-
-        atkDirection = GameObject.Find("Attack_Direction").transform;
-        atkColliderTransform = GameObject.Find("Attack_Trigger").transform;
-        atkColliderTrigger = GetComponentInChildren<BoxCollider2D>();
+        attackTrigger.enabled = false; // Makes sure the attack trigger is disabled at the start
     }
 
     void Update()
     {
-        MoveAttackTrigger();
+        if (canAimAttack) // Makes sure the player can't redirect their attack while it's happening
+        {
+            RotateAttackTrigger();
+        }
+        AttackFunction();    
     }
 
     void FixedUpdate()
     {
-        if (playerInputScript.attacking)
+
+    }
+
+    #region Attacking
+    void AttackFunction()
+    {
+        if (playerInputs.attacking && canAttack)
         {
-            AttackFunction();
+            StartCoroutine(PerformAttack());
         }
     }
 
-    void AttackFunction()
+    IEnumerator PerformAttack()
+    {
+        // Attack is building up
+        aimStickRenderer.material.color = new Color(1, 1, 0); // Makes attack stick yellow for visual aid in testing
+        hitTargets.Clear();
+        canAttack = false;
+        //Code to initiate attack animation
+        yield return new WaitForSeconds(attackBuildUpTime); // Time before attack deals damage
+
+        // Attack is now able to damage
+        aimStickRenderer.material.color = new Color(0, 1, 0); // Makes attack stick green for visual aid in testing
+        canAimAttack = false;
+        attackTrigger.enabled = true;
+        yield return new WaitForSeconds(damageDuration); // Time before attack no longer deals damage
+
+        // Attack can no longer damage
+        aimStickRenderer.material.color = new Color(1, 0, 0); // Makes attack stick red for visual aid in testing
+        canAimAttack = true;
+        attackTrigger.enabled = false;
+        yield return new WaitForSeconds(attackResetTime); // Time before player can attack again
+
+        // New attack can now be started
+        aimStickRenderer.material.color = new Color(1, 1, 1); // Makes attack stick white for visual aid in testing
+        canAttack = true;
+    }
+
+    private void OnTriggerEnter(Collider target)
+    {
+        if (attackTrigger.enabled && ((1 << target.gameObject.layer) & attackableLayers.value) != 0)
+        {            
+            if (!hitTargets.Contains(target.gameObject))
+            {
+                hitTargets.Add(target.gameObject);
+                if (target.CompareTag("Enemy"))
+                {
+                    ApplyDamage(target.gameObject); // Deals damage if the target is an enemy
+                }
+                else if (target.CompareTag("Projectile"))
+                {
+                    DeflectProjectile(target.gameObject); // Deflects if the target is a projectile
+                }
+                
+            }            
+        }
+    }
+
+    void ApplyDamage(GameObject target)
+    {
+        TargetHealth targetHealth = target.GetComponent<TargetHealth>();
+        if (targetHealth != null)
+        {
+            targetHealth.TakeDamage(attackDamage);
+        }
+    }
+
+    void DeflectProjectile(GameObject target)
     {
         
     }
+    #endregion
 
-    void MoveAttackTrigger()
+    #region Move The Trigger
+    void RotateAttackTrigger()
     {
-        if (playerInputScript == null) return;
+        if (playerInputs == null) return;
 
-        float aimAngle = playerInputScript.aimObject.rotation.eulerAngles.z;
+        float aimAngle = playerInputs.aimObject.rotation.eulerAngles.z;
         float[] angles = {  0, 22.5f, 45, 67.5f, 90, 112.5f, 135, 157.5f, 180, 
                             225,    // Down left
                             270,    // Down down
@@ -79,27 +168,28 @@ public class AttackScript : MonoBehaviour
         }
         if(closestAngle == 225) // Down left
         {
-            atkColliderTrigger.offset = new Vector2(downXOffset, downYOffset);
-            atkColliderTrigger.size = new Vector2(downWidth, downHeight);
-            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+            attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
+            attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
+            attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
         }
         else if(closestAngle == 270) // Down down
         {
-            atkColliderTrigger.offset = new Vector2(downXOffset, downYOffset);
-            atkColliderTrigger.size = new Vector2(downWidth, downHeight);
-            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+            attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
+            attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
+            attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
         }
         else if(closestAngle == 315) //Down right
         {
-            atkColliderTrigger.offset = new Vector2(downXOffset, downYOffset);
-            atkColliderTrigger.size = new Vector2(downWidth, downHeight);
-            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+            attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
+            attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
+            attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
         }
         else
         {
-            atkColliderTrigger.offset = new Vector2(defaultXOffset, defaultYOffset);
-            atkColliderTrigger.size = new Vector2(defaultWidth, defaultHeight);
-            atkColliderTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+            attackTrigger.center = new Vector3(defaultXOffset, defaultYOffset);
+            attackTrigger.size = new Vector3(defaultWidth, defaultHeight, triggerDepth);
+            attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
         }
     }
+    #endregion
 }
