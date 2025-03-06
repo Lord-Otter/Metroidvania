@@ -42,7 +42,7 @@ public class PlayerVelocity : MonoBehaviour
     {
         velocity = rigidBody.velocity;
 
-        if (!playerMovement.isDashing &&  (playerInputs.highJumping && velocity.y > 0))
+        if (!playerMovement.isDashing &&  playerInputs.highJumping && velocity.y > 0)
         {
             velocity.y -= jumpGravity * Time.fixedDeltaTime;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);

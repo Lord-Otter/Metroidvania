@@ -159,18 +159,18 @@ public class PlayerInputs : MonoBehaviour
         // Jumping
         if (Input.GetButtonDown("Jump"))
         {
-            if (playerMovement.canGroundJump && !playerMovement.isDashing)
+            if (playerMovement.canJump && !playerMovement.isDashing)
             {
                 jumping = true;
             }
-            else if (!playerMovement.canGroundJump && !playerMovement.isDashing && (playerMovement.airJumps > 0))
+            else if (!playerMovement.canJump && !playerMovement.isDashing && (playerMovement.airJumps > 0))
             {
                 airJumping = true;
             }
         }
 
         highJumping = Input.GetButton("Jump");
-
+        
         // Special Moves
         dashing = Input.GetButton("Dash");
 

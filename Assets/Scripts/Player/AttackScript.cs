@@ -34,6 +34,7 @@ public class AttackScript : MonoBehaviour
     public float downWidth;
     public float downHeight;
     private float triggerDepth = 3;
+    private float closestAngle;
 
     [Header("Testing")]
     private Renderer aimStickRenderer;
@@ -116,6 +117,11 @@ public class AttackScript : MonoBehaviour
                 hitTargets.Add(target.gameObject);
                 if (target.CompareTag("Enemy"))
                 {
+                    if(closestAngle == 225 || closestAngle == 270 || closestAngle == 315)
+                    {
+                        playerMovement.Pogo();
+                    }
+
                     ApplyDamage(target.gameObject); // Deals damage if the target is an enemy
                 }
                 else if (target.CompareTag("Projectile"))
@@ -153,7 +159,7 @@ public class AttackScript : MonoBehaviour
                             270,    // Down down
                             315 };  //Down Right
 
-        float closestAngle = angles[0];
+        closestAngle = angles[0];
         float smallestDifference = Mathf.Abs(Mathf.DeltaAngle(aimAngle, closestAngle));
 
         foreach (float angle in angles)

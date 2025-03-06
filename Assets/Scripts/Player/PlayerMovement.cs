@@ -21,7 +21,7 @@ public class PlayerMovement : MonoBehaviour
     public float airJumpForce = 10f;
     public float jumpCancelForce = 10f;
     public float jumpGracePeriod = 0.1f;
-    [HideInInspector] public bool canGroundJump = false;
+    [HideInInspector] public bool canJump = false;
     public int maxAirJumps = 1;
     private float airTimeStart;
     public int airJumps;
@@ -39,6 +39,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Pogo")]
     public float pogoForce;
+    [HideInInspector]public bool isPogo;
 
     [Header("Drag")]
     public float horizontalGroundDrag = 100f;
@@ -117,7 +118,7 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Jump
-    public void Jumping()
+    void Jumping()
     {
         playerVelocity.velocity = playerVelocity.rigidBody.velocity;
 
@@ -126,7 +127,8 @@ public class PlayerMovement : MonoBehaviour
         {
             playerVelocity.velocity.y = jumpForce;
             playerInputs.jumping = false;
-            canGroundJump = false;
+            canJump = false;
+            isPogo = false;
         }
         // Double Jump
         else if (playerInputs.airJumping)
@@ -134,24 +136,48 @@ public class PlayerMovement : MonoBehaviour
             airJumps--;
             playerVelocity.velocity.y = airJumpForce;
             playerInputs.airJumping = false;
+            isPogo = false;
         }
 
         // Coyote Jump
-        if (playerChecks.IsGrounded())
+        if (playerChecks.IsGrounded() || playerChecks.IsTouchingWall())
         {
             airTimeStart = Time.time;
-            canGroundJump = true;
+            canJump = true;
         }
         else if (Time.time - airTimeStart >= jumpGracePeriod)
         {
-            canGroundJump = false;
+            canJump = false;
         }
 
         // Jump Canceling
         if (!playerInputs.highJumping && playerVelocity.velocity.y > 0)
         {
-            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime, 0);
+            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime);
         }
+        else if(isPogo)
+        {
+            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime);
+        }
+
+        if(playerVelocity.velocity.y < 0 && isPogo)
+        {
+            isPogo = false;
+        }
+
+        playerVelocity.rigidBody.velocity = playerVelocity.velocity;
+    }
+
+    public void Pogo()
+    {
+        isPogo = true;
+
+        playerVelocity.velocity = playerVelocity.rigidBody.velocity;
+
+        playerVelocity.velocity.y = 0;
+        playerVelocity.velocity.y = pogoForce;
+
+        ResetMovementAbilities();
 
         playerVelocity.rigidBody.velocity = playerVelocity.velocity;
     }
@@ -161,11 +187,6 @@ public class PlayerMovement : MonoBehaviour
     void DashExecution()
     {
         playerVelocity.velocity = playerVelocity.rigidBody.velocity;
-
-        /*if (playerChecks.IsGrounded())
-        {
-            dashGroundReset = true;
-        }*/
 
         if (dashCooldownReset && dashGroundReset)
         {

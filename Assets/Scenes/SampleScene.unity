@@ -1289,7 +1289,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d369f8cde2d3434498b3e2fbe0fd4338, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 10
+  maxHealth: 1000
   health: 0
   damageDelay: 0.3
   canBePogod: 1
@@ -1754,7 +1754,7 @@ MonoBehaviour:
   airJumpForce: 14
   jumpCancelForce: 25
   jumpGracePeriod: 0.1
-  canGroundJump: 1
+  canJump: 0
   maxAirJumps: 1
   airJumps: 0
   dashSpeed: 25
@@ -1762,7 +1762,8 @@ MonoBehaviour:
   dashCooldown: 0.5
   canDash: 1
   isDashing: 0
-  pogoForce: 0
+  pogoForce: 14
+  isPogo: 0
   horizontalGroundDrag: 100
   horizontalAirDrag: 10
 --- !u!114 &1145036903
