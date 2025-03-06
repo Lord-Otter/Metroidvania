@@ -141,8 +141,6 @@ public class PlayerMovement : MonoBehaviour
         {
             airTimeStart = Time.time;
             canGroundJump = true;
-
-            airJumps = maxAirJumps;
         }
         else if (Time.time - airTimeStart >= jumpGracePeriod)
         {
@@ -164,10 +162,10 @@ public class PlayerMovement : MonoBehaviour
     {
         playerVelocity.velocity = playerVelocity.rigidBody.velocity;
 
-        if (playerChecks.IsGrounded())
+        /*if (playerChecks.IsGrounded())
         {
             dashGroundReset = true;
-        }
+        }*/
 
         if (dashCooldownReset && dashGroundReset)
         {
@@ -217,4 +215,10 @@ public class PlayerMovement : MonoBehaviour
         StopCoroutine(DashCooldown());
     }
     #endregion
+
+        public void ResetMovementAbilities()
+    {
+        dashGroundReset = true;
+        airJumps = maxAirJumps;
+    }
 }

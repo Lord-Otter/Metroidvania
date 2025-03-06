@@ -57,6 +57,11 @@ public class PlayerChecks : MonoBehaviour
         bool hit2 = Physics.Raycast(origin2, direction, raycastDistance);
         bool hitC = Physics.Raycast(origin2, directionC, raycastDistanceC);
 
+        if(hit1 || hit2 || hitC)
+        {
+            playerMovement.ResetMovementAbilities();
+        }
+
         return hit1 || hit2 || hitC;
     }
 
@@ -73,6 +78,11 @@ public class PlayerChecks : MonoBehaviour
 
         bool hit1 = Physics.Raycast(origin1, direction1, raycastDistance);
         bool hit2 = Physics.Raycast(origin2, direction2, raycastDistance);
+
+        if(hit1 || hit2)
+        {
+            playerMovement.ResetMovementAbilities();
+        }
 
         return hit1 || hit2;
     }
