@@ -20,7 +20,7 @@ public class ProjectileVelocity : MonoBehaviour
 
     void Start()
     {
-        Destroy(gameObject, 20);
+        Destroy(gameObject, 30);
     }
 
     // Update is called once per frame

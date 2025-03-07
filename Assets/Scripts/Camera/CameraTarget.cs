@@ -36,7 +36,7 @@ public class CameraTargetScript : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         MoveTarget();
     }

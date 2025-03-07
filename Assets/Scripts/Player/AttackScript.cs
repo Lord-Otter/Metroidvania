@@ -119,7 +119,7 @@ public class AttackScript : MonoBehaviour
     {
         if (((1 << target.gameObject.layer) & attackableLayers.value) != 0)
         {            
-            if (!hitTargets.Contains(target.gameObject))
+            if (attackTrigger.enabled && !hitTargets.Contains(target.gameObject))
             {
                 hitTargets.Add(target.gameObject);
                 if (target.CompareTag("Enemy"))
