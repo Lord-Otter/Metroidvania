@@ -35,9 +35,15 @@ public class AttackScript : MonoBehaviour
     public float downHeight;
     private float triggerDepth = 3;
     private float closestAngle;
+    private float angle;
 
     [Header("Testing")]
     private Renderer aimStickRenderer;
+    public GameObject swoosh; // Temporary shit
+    float[] angles = {  0, 22.5f, 45, 67.5f, 90, 112.5f, 135, 157.5f, 180, 
+                            202.5f, 225,    // Down left
+                            270,            // Down down
+                            315, 337.5f };  // Down right
 
 
     private void Awake()
@@ -65,7 +71,7 @@ public class AttackScript : MonoBehaviour
         {
             RotateAttackTrigger();
         }
-        AttackFunction();    
+        AttackFunction();
     }
 
     void FixedUpdate()
@@ -93,6 +99,7 @@ public class AttackScript : MonoBehaviour
 
         // Attack is now able to damage
         aimStickRenderer.material.color = new Color(0, 1, 0); // Makes attack stick green for visual aid in testing
+        Instantiate(swoosh, attackTrigger.transform); // Temporary swoosh sprite
         canAimAttack = false;
         attackTrigger.enabled = true;
         yield return new WaitForSeconds(damageDuration); // Time before attack no longer deals damage
@@ -110,7 +117,7 @@ public class AttackScript : MonoBehaviour
 
     private void OnTriggerEnter(Collider target)
     {
-        if (attackTrigger.enabled && ((1 << target.gameObject.layer) & attackableLayers.value) != 0)
+        if (((1 << target.gameObject.layer) & attackableLayers.value) != 0)
         {            
             if (!hitTargets.Contains(target.gameObject))
             {
@@ -119,7 +126,10 @@ public class AttackScript : MonoBehaviour
                 {
                     if(closestAngle == 225 || closestAngle == 270 || closestAngle == 315)
                     {
-                        playerMovement.Pogo();
+                        if(!playerChecks.IsGrounded())
+                        {
+                            playerMovement.Pogo();
+                        }
                     }
 
                     ApplyDamage(target.gameObject); // Deals damage if the target is an enemy
@@ -144,7 +154,11 @@ public class AttackScript : MonoBehaviour
 
     void DeflectProjectile(GameObject target)
     {
-        
+        ProjectileVelocity projectileVelocity = target.GetComponent<ProjectileVelocity>();
+        if(projectileVelocity != null)
+        {
+            projectileVelocity.ChangeTrajectory(angle);
+        }
     }
     #endregion
 
@@ -154,10 +168,11 @@ public class AttackScript : MonoBehaviour
         if (playerInputs == null) return;
 
         float aimAngle = playerInputs.aimObject.rotation.eulerAngles.z;
-        float[] angles = {  0, 22.5f, 45, 67.5f, 90, 112.5f, 135, 157.5f, 180, 
-                            225,    // Down left
-                            270,    // Down down
-                            315 };  //Down Right
+        angle = aimAngle;
+        /*float[] angles = {  0, 22.5f, 45, 67.5f, 90, 112.5f, 135, 157.5f, 180, 
+                            202.5f, 225,    // Down left
+                            270,            // Down down
+                            315, 337.5f };  // Down right*/
 
         closestAngle = angles[0];
         float smallestDifference = Mathf.Abs(Mathf.DeltaAngle(aimAngle, closestAngle));
@@ -172,29 +187,76 @@ public class AttackScript : MonoBehaviour
                 closestAngle = angle;
             }
         }
-        if(closestAngle == 225) // Down left
+
+        if(!playerChecks.IsGrounded())
         {
-            attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
-            attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
-            attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
-        }
-        else if(closestAngle == 270) // Down down
-        {
-            attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
-            attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
-            attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
-        }
-        else if(closestAngle == 315) //Down right
-        {
-            attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
-            attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
-            attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+            if(closestAngle == 202.5f || closestAngle == 225)
+            {
+                if(aimAngle > 202.5f)
+                {
+                    attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
+                    attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
+                    attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, 225);
+                }
+                else if(aimAngle < 202.5f)
+                {
+                    attackTrigger.center = new Vector3(defaultXOffset, defaultYOffset);
+                    attackTrigger.size = new Vector3(defaultWidth, defaultHeight, triggerDepth);
+                    attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, 180);
+                }
+            }
+            else if(closestAngle == 270) // Down down
+            {
+                attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
+                attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
+                attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, 270);
+            }
+            else if(closestAngle == 315 || closestAngle == 337.5f) //Down right
+            {
+                if(aimAngle < 337.5f)
+                {
+                    attackTrigger.center = new Vector3(downXOffset, downYOffset, 0);
+                    attackTrigger.size = new Vector3(downWidth, downHeight, triggerDepth);
+                    attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, 315);
+                }
+                else if(aimAngle > 337.5f)
+                {
+                    attackTrigger.center = new Vector3(defaultXOffset, defaultYOffset);
+                    attackTrigger.size = new Vector3(defaultWidth, defaultHeight, triggerDepth);
+                    attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                }
+            }
+            else
+            {
+                attackTrigger.center = new Vector3(defaultXOffset, defaultYOffset);
+                attackTrigger.size = new Vector3(defaultWidth, defaultHeight, triggerDepth);
+                attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+            }
         }
         else
         {
-            attackTrigger.center = new Vector3(defaultXOffset, defaultYOffset);
-            attackTrigger.size = new Vector3(defaultWidth, defaultHeight, triggerDepth);
-            attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+            if(closestAngle == 270)
+            {
+                if(aimAngle > 270)
+                {
+                    attackTrigger.center = new Vector3(defaultXOffset, defaultYOffset);
+                    attackTrigger.size = new Vector3(defaultWidth, defaultHeight, triggerDepth);
+                    attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, 315);
+                }
+                else
+                {
+                    attackTrigger.center = new Vector3(defaultXOffset, defaultYOffset);
+                    attackTrigger.size = new Vector3(defaultWidth, defaultHeight, triggerDepth);
+                    attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, 225);
+                }
+            }
+            else
+            {
+                attackTrigger.center = new Vector3(defaultXOffset, defaultYOffset);
+                attackTrigger.size = new Vector3(defaultWidth, defaultHeight, triggerDepth);
+                attackTrigger.transform.localRotation = Quaternion.Euler(0, 0, closestAngle);
+            }
+
         }
     }
     #endregion

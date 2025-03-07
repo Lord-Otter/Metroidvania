@@ -16,6 +16,9 @@ public class PlayerChecks : MonoBehaviour
     public RotateMode rotateMode;
     public bool isFacingRight;
 
+    [Header("Ground Check")]
+    public LayerMask groundLayer;
+
     private void Awake()
     {
         attackScript = GetComponent<AttackScript>();
@@ -53,9 +56,9 @@ public class PlayerChecks : MonoBehaviour
         Debug.DrawRay(origin2, direction * raycastDistance, Color.red);
         Debug.DrawRay(originC, directionC * raycastDistanceC, Color.red);
 
-        bool hit1 = Physics.Raycast(origin1, direction, raycastDistance);
-        bool hit2 = Physics.Raycast(origin2, direction, raycastDistance);
-        bool hitC = Physics.Raycast(origin2, directionC, raycastDistanceC);
+        bool hit1 = Physics.Raycast(origin1, direction, raycastDistance, groundLayer);
+        bool hit2 = Physics.Raycast(origin2, direction, raycastDistance, groundLayer);
+        bool hitC = Physics.Raycast(origin2, directionC, raycastDistanceC, groundLayer);
 
         if(hit1 || hit2 || hitC)
         {
