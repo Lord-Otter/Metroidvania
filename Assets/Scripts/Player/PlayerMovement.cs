@@ -21,7 +21,7 @@ public class PlayerMovement : MonoBehaviour
     public float airJumpForce = 10f;
     public float jumpCancelForce = 10f;
     public float jumpGracePeriod = 0.1f;
-    [HideInInspector] public bool canJump = false;
+    public bool canJump = false;
     public int maxAirJumps = 1;
     private float airTimeStart;
     public int airJumps;
@@ -140,7 +140,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Coyote Jump
-        if (playerChecks.IsGrounded() || playerChecks.IsTouchingWall())
+        if (playerChecks.IsGrounded())
         {
             airTimeStart = Time.time;
             canJump = true;
@@ -151,7 +151,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Jump Canceling
-        if (!playerInputs.highJumping && playerVelocity.velocity.y > 0)
+        if (!playerInputs.highJumping && playerVelocity.velocity.y > -1)
         {
             playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime);
         }

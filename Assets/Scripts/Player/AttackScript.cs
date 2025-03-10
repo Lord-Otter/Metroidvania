@@ -155,9 +155,52 @@ public class AttackScript : MonoBehaviour
     void DeflectProjectile(GameObject target)
     {
         ProjectileVelocity projectileVelocity = target.GetComponent<ProjectileVelocity>();
-        if(projectileVelocity != null)
+        if (projectileVelocity != null)
         {
-            projectileVelocity.ChangeTrajectory(angle);
+            // Get vector direction from player to projectile
+            Vector3 toProjectile = target.transform.position - transform.position;
+
+            // Get distance to projectile
+            float distanceToProjectile = toProjectile.magnitude;
+
+            // Convert to angle relative to the world
+            float projectileAngle = Mathf.Atan2(toProjectile.y, toProjectile.x) * Mathf.Rad2Deg;
+
+            // Calculate the angle difference
+            float angleDifference = Mathf.Abs(Mathf.DeltaAngle(angle, projectileAngle));
+
+            // Check if this is the smallest angle difference
+            GameObject bestCritProjectile = null;
+            float smallestAngleDiff = float.MaxValue;
+
+            foreach (GameObject proj in hitTargets)
+            {
+                ProjectileVelocity projVelocity = proj.GetComponent<ProjectileVelocity>();
+                if (projVelocity != null)
+                {
+                    Vector3 toProj = proj.transform.position - transform.position;
+                    float projAngle = Mathf.Atan2(toProj.y, toProj.x) * Mathf.Rad2Deg;
+                    float projAngleDiff = Mathf.Abs(Mathf.DeltaAngle(angle, projAngle));
+
+                    if (projAngleDiff < smallestAngleDiff)
+                    {
+                        smallestAngleDiff = projAngleDiff;
+                        bestCritProjectile = proj;
+                    }
+                }
+            }
+
+            if (target == bestCritProjectile && smallestAngleDiff < 10 && (distanceToProjectile > 1 || distanceToProjectile < 2.25f))
+            {
+                projectileVelocity.ChangeTrajectory(angle);
+                projectileVelocity.isCritical = true;
+
+                Debug.Log("Crit");
+            }
+            else
+            {
+                projectileVelocity.ChangeTrajectory(angle + angleDifference * 0.5f);
+            }
         }
     }
     #endregion

@@ -11,6 +11,7 @@ public class ProjectileVelocity : MonoBehaviour
     public float speed;
     //public float maxSpeed;
     public float speedMultiplier;
+    public bool isCritical = false;
 
     private void Awake()
     {
@@ -20,7 +21,7 @@ public class ProjectileVelocity : MonoBehaviour
 
     void Start()
     {
-        Destroy(gameObject, 30);
+        Destroy(gameObject, 60);
     }
 
     // Update is called once per frame
