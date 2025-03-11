@@ -2119,6 +2119,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   hitTargets: []
+  deflectedProjectiles: []
+  critProjectiles: []
+  teleportProjectile: []
   defaultXOffset: 1.5
   defaultYOffset: 0
   defaultWidth: 3
@@ -2171,7 +2174,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77fa74c8711f9634dbd85ae93bb7912f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  aimMode: 0
+  aimMode: 2
   aimObject: {fileID: 0}
   aimHorizontalR: 0
   aimVerticalR: 0
