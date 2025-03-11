@@ -27,8 +27,9 @@ public class AttackScript : MonoBehaviour
     private BoxCollider attackTrigger;
 
     [Header("Projectile Deflection")]
-    public List<(GameObject projectile, float angleDifference)> deflectedProjectiles = new List<(GameObject, float)>();
-    public List<(GameObject projectile, float angleDifference)> critProjectiles = new List<(GameObject, float)>();
+    public List<(GameObject projectile, float absAngleDifference)> deflectedProjectiles = new List<(GameObject, float)>();
+    public List<(GameObject projectile, float absAngleDifference)> critProjectiles = new List<(GameObject, float)>();
+    public List<(GameObject projectile, float absAngleDifference)> tpProjectile = new List<(GameObject, float)>();
     public List<GameObject> teleportProjectile = new List<GameObject>();
 
 
@@ -101,6 +102,13 @@ public class AttackScript : MonoBehaviour
         // Attack is building up
         aimStickRenderer.material.color = new Color(1, 1, 0); // Makes attack stick yellow for visual aid in testing
         hitTargets.Clear();
+
+        // Projectile stuffs
+        deflectedProjectiles.Clear();
+        critProjectiles.Clear();
+        tpProjectile.Clear();
+        teleportProjectile.Clear();
+
         canAttack = false;
         //Code to initiate attack animation
         yield return new WaitForSeconds(attackBuildUpTime); // Time before attack deals damage
@@ -164,47 +172,28 @@ public class AttackScript : MonoBehaviour
     {
         ProjectileVelocity projectileVelocity = target.GetComponent<ProjectileVelocity>();
 
-        deflectedProjectiles.Clear();
-        critProjectiles.Clear();
-        teleportProjectile.Clear();
-
         // Get vector direction from player to projectile
         Vector3 toProjectile = target.transform.position - transform.position;
-
-        // Get distance to projectile
-        float distanceToProjectile = toProjectile.magnitude;
 
         // Convert to angle relative to the world
         float projectileAngle = Mathf.Atan2(toProjectile.y, toProjectile.x) * Mathf.Rad2Deg;
 
         // Calculate the angle difference
         float angleDifference = Mathf.DeltaAngle(angle, projectileAngle);
+        float absAngleDifference = Mathf.Abs(angleDifference);
 
-        // Store the projectile for sorting later
-        if (angleDifference < 10 && distanceToProjectile > 1 && distanceToProjectile < 2.25)
+        // Apply the new trajectory with the angleDifference offset
+        projectileVelocity.ChangeTrajectory(angle + angleDifference * 0.5f, absAngleDifference);
+
+        // Check if this projectile should be added to teleportProjectile
+        if (tpProjectile.Count == 0 || absAngleDifference < tpProjectile[0].absAngleDifference)
         {
-            critProjectiles.Add((target, angleDifference));
-        }
-        else
-        {
-            deflectedProjectiles.Add((target, angleDifference));
-        }
+            tpProjectile.Clear();
+            teleportProjectile.Clear();
 
-        if (critProjectiles.Count > 0)
-        {
-            critProjectiles.Sort((a, b) => a.angleDifference.CompareTo(b.angleDifference));
-
-            teleportProjectile.Add(critProjectiles[0].projectile);
+            tpProjectile.Add((target, absAngleDifference));
+            teleportProjectile.Add(target);
         }
-        else
-        {
-            deflectedProjectiles.Sort((a, b) => a.angleDifference.CompareTo(b.angleDifference));
-
-            teleportProjectile.Add(critProjectiles[0].projectile);
-        }
-            
-
-        projectileVelocity.ChangeTrajectory(angle + angleDifference);
     }
     #endregion
 

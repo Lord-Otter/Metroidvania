@@ -76,8 +76,10 @@ MonoBehaviour:
   rigidBody: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   transform: {fileID: 0}
-  speed: 1
+  speed: 2
   speedMultiplier: 1
+  isCritical: 0
+  angleDifference: 0
 --- !u!212 &7327301035300383443
 SpriteRenderer:
   m_ObjectHideFlags: 0

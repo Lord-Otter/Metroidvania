@@ -12,6 +12,7 @@ public class ProjectileVelocity : MonoBehaviour
     //public float maxSpeed;
     public float speedMultiplier;
     public bool isCritical = false;
+    public float angleDifference;
 
     private void Awake()
     {
@@ -44,8 +45,9 @@ public class ProjectileVelocity : MonoBehaviour
         rigidBody.velocity = velocity;
     }
 
-    public void ChangeTrajectory(float angle)
+    public void ChangeTrajectory(float angle, float angleDiff)
     {
         transform.rotation = Quaternion.Euler(0, 0, angle);
+        angleDifference = angleDiff;
     }
 }
