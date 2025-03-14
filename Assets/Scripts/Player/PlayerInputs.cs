@@ -34,6 +34,7 @@ public class PlayerInputs : MonoBehaviour
     public bool highJumping;
     public bool airJumping;
     public bool dashing;
+    public bool teleporting;
 
     [Header("Attacks")]
     public bool attacking;
@@ -72,11 +73,6 @@ public class PlayerInputs : MonoBehaviour
         {
             AimModeFunction();
         }
-    }
-
-    void FixedUpdate()
-    {
-        
     }
 
     #region Inputs
@@ -156,7 +152,7 @@ public class PlayerInputs : MonoBehaviour
             aimVerticalR = 0f;
         }
 
-        // Jumping
+        // Jump
         if (Input.GetButtonDown("Jump"))
         {
             if (playerMovement.canJump && !playerMovement.isDashing)
@@ -171,13 +167,16 @@ public class PlayerInputs : MonoBehaviour
 
         highJumping = Input.GetButton("Jump");
         
-        // Special Moves
+        // Dash
         dashing = Input.GetButton("Dash");
 
         // Attack
         attacking = (aimMode == AimMode.Stick) 
         ? Input.GetAxisRaw("TriggerAttack") > 0.1f 
         : Input.GetButton("ButtonAttack");
+
+        // Teleport
+        teleporting = Input.GetButtonDown("Teleport");
     }
     #endregion
 

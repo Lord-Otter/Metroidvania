@@ -11,6 +11,7 @@ public class ProjectileVelocity : MonoBehaviour
     public float speed;
     //public float maxSpeed;
     public float speedMultiplier;
+    public float despawnTimer;
     public bool isCritical = false;
     public float angleDifference;
 
@@ -22,7 +23,7 @@ public class ProjectileVelocity : MonoBehaviour
 
     void Start()
     {
-        Destroy(gameObject, 60);
+        Destroy(gameObject, despawnTimer);
     }
 
     // Update is called once per frame
@@ -38,11 +39,11 @@ public class ProjectileVelocity : MonoBehaviour
 
     void Traveling()
     {
-        velocity = rigidBody.velocity;
+        velocity = rigidBody.linearVelocity;
 
         velocity = transform.right * speed;
 
-        rigidBody.velocity = velocity;
+        rigidBody.linearVelocity = velocity;
     }
 
     public void ChangeTrajectory(float angle, float angleDiff)

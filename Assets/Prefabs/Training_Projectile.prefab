@@ -76,8 +76,9 @@ MonoBehaviour:
   rigidBody: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
   transform: {fileID: 0}
-  speed: 2
+  speed: 5
   speedMultiplier: 1
+  despawnTimer: 10
   isCritical: 0
   angleDifference: 0
 --- !u!212 &7327301035300383443
@@ -97,6 +98,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

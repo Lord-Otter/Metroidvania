@@ -40,7 +40,7 @@ public class PlayerVelocity : MonoBehaviour
 
     public void Physics()
     {
-        velocity = rigidBody.velocity;
+        velocity = rigidBody.linearVelocity;
 
         if (!playerMovement.isDashing &&  playerInputs.highJumping && velocity.y > 0)
         {
@@ -53,6 +53,6 @@ public class PlayerVelocity : MonoBehaviour
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
 
-        rigidBody.velocity = velocity;
+        rigidBody.linearVelocity = velocity;
     }
 }

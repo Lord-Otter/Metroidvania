@@ -64,7 +64,7 @@ public class PlayerChecks : MonoBehaviour
         {
             playerMovement.ResetMovementAbilities();
         }
-
+        
         return hit1 || hit2 || hitC;
     }
 

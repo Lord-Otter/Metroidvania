@@ -34,11 +34,11 @@ public class EnemyVelocity : MonoBehaviour
 
     public void Physics()
     {
-        velocity = rigidBody.velocity;
+        velocity = rigidBody.linearVelocity;
 
         velocity.y -= gravity * Time.fixedDeltaTime;
         velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         
-        rigidBody.velocity = velocity;
+        rigidBody.linearVelocity = velocity;
     }
 }

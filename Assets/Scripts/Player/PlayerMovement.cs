@@ -9,33 +9,44 @@ public class PlayerMovement : MonoBehaviour
     private PlayerChecks playerChecks;
     private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
+    private Transform playerTransform;
 
 
     [Header("Run")]
     public float maxMoveSpeed = 10f;
     public float moveAcceleration = 100f;
     public float airAcceleration = 50f;
+    public bool canRun = true;
 
     [Header("Jump")]
     public float jumpForce = 10f;
     public float airJumpForce = 10f;
     public float jumpCancelForce = 10f;
     public float jumpGracePeriod = 0.1f;
-    public bool canJump = false;
     public int maxAirJumps = 1;
     private float airTimeStart;
     public int airJumps;
+    public bool canJump = false;
 
     [Header("Dash")]
     public float dashSpeed;
     public float dashRange;
     public float dashCooldown;
-    public bool canDash = true;
     private bool dashCooldownReset;
     private bool dashGroundReset;
     private float dashStartTime;
-    public bool isDashing = false;
+    [HideInInspector]public bool isDashing = false;
     private float dashDirection;
+    public bool canDash = true;
+
+    [Header("Teleport")]
+    private GameObject teleportTarget;
+    public float tpSpeed;
+    public float tpAcceleration;
+    public int tpLimitMax;
+    public int tpLimit;
+    public float tpCooldown;
+    public bool canTP;
 
     [Header("Pogo")]
     public float pogoForce;
@@ -51,14 +62,22 @@ public class PlayerMovement : MonoBehaviour
         playerChecks = GetComponent<PlayerChecks>();
         playerInputs = GetComponent<PlayerInputs>();
         playerVelocity = GetComponent<PlayerVelocity>();
+        playerTransform = GetComponent<Transform>();
+
+        // Teleport
+        teleportTarget = GameObject.Find("Teleport_Target");
     }
 
     void Start()
     {
+        // Jump
         airJumps = maxAirJumps;
 
         // Dash
         StartCoroutine(DashCooldown());
+
+        // Teleport
+        tpLimit = tpLimitMax;
     }
 
     // Update is called once per frame
@@ -71,13 +90,16 @@ public class PlayerMovement : MonoBehaviour
         Jumping();
 
         // Dash
-        DashExecution();
+        Dashing();
+
+        // Teleport
+        Teleporting();
     }
 
     #region Run
     public void Movement()
     {
-        playerVelocity.velocity = playerVelocity.rigidBody.velocity;
+        playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
         float horizontalSpeed;
 
         if (Mathf.Abs(playerInputs.moveHorizontal) > 0.7f || Mathf.Abs(playerInputs.moveVertical) > 0.7f)
@@ -100,7 +122,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isDashing)
         {
-            if (playerInputs.movingLeft || playerInputs.movingRight)
+            if ((playerInputs.movingLeft || playerInputs.movingRight) && canRun)
             {
                 playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
             }
@@ -113,14 +135,14 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        playerVelocity.rigidBody.velocity = playerVelocity.velocity;
+        playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }
     #endregion
 
     #region Jump
     void Jumping()
     {
-        playerVelocity.velocity = playerVelocity.rigidBody.velocity;
+        playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
 
         // Jumping
         if (playerInputs.jumping)
@@ -165,28 +187,28 @@ public class PlayerMovement : MonoBehaviour
             isPogo = false;
         }
 
-        playerVelocity.rigidBody.velocity = playerVelocity.velocity;
+        playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }
 
     public void Pogo()
     {
         isPogo = true;
 
-        playerVelocity.velocity = playerVelocity.rigidBody.velocity;
+        playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
 
         playerVelocity.velocity.y = 0;
         playerVelocity.velocity.y = pogoForce;
 
         ResetMovementAbilities();
 
-        playerVelocity.rigidBody.velocity = playerVelocity.velocity;
+        playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }
     #endregion
 
     #region Dash
-    void DashExecution()
+    void Dashing()
     {
-        playerVelocity.velocity = playerVelocity.rigidBody.velocity;
+        playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
 
         if (dashCooldownReset && dashGroundReset)
         {
@@ -226,7 +248,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        playerVelocity.rigidBody.velocity = playerVelocity.velocity;
+        playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }
 
     IEnumerator DashCooldown()
@@ -237,9 +259,27 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
+    #region Teleport
+    void Teleporting()
+    {
+        playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
+
+        if(playerInputs.teleporting && canTP)
+        {
+            //playerVelocity.velocity.y = 10;
+
+            playerTransform.position = teleportTarget.transform.position;
+        }
+
+        playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
+    }
+    #endregion
+
+    #region Miscellaneous
         public void ResetMovementAbilities()
     {
         dashGroundReset = true;
         airJumps = maxAirJumps;
     }
+    #endregion
 }

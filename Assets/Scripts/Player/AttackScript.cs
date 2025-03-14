@@ -107,7 +107,6 @@ public class AttackScript : MonoBehaviour
         deflectedProjectiles.Clear();
         critProjectiles.Clear();
         tpProjectile.Clear();
-        teleportProjectile.Clear();
 
         canAttack = false;
         //Code to initiate attack animation
