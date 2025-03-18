@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerVelocity : MonoBehaviour
 {
-    private AttackScript attackScript;
+    private PlayerAttack playerAttack;
     private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
     private PlayerInputs playerInputs;
@@ -19,7 +19,7 @@ public class PlayerVelocity : MonoBehaviour
 
     private void Awake()
     {
-        attackScript = GetComponent<AttackScript>();
+        playerAttack = GetComponent<PlayerAttack>();
         playerMovement = GetComponent<PlayerMovement>();
         playerChecks = GetComponent<PlayerChecks>();
         playerInputs = GetComponent<PlayerInputs>();

@@ -1,36 +1,41 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class TeleportTargetScript : MonoBehaviour
 {
     private GameObject player;
-    private AttackScript attackScript;
+    private PlayerAttack playerAttack;
     private SpriteRenderer spriteRenderer;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         player = GameObject.Find("Player");
-        attackScript = GameObject.Find("Player").GetComponent<AttackScript>();
+        playerAttack = GameObject.Find("Player").GetComponent<PlayerAttack>();
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        StickToTeleportProjectile();        
+        StickToTeleportProjectile();
+        Rotate();
     }
 
     void StickToTeleportProjectile()
     {
-        if(attackScript.teleportProjectile.Count != 0 && attackScript.teleportProjectile[0] != null)
+        if(playerAttack.teleportProjectile.Count != 0 && playerAttack.teleportProjectile[0] != null)
         {
             spriteRenderer.enabled = true;
-            transform.position = attackScript.teleportProjectile[0].transform.position;
+            transform.position = playerAttack.teleportProjectile[0].transform.position;
         }
         else
         {
             spriteRenderer.enabled = false;
             transform.position = player.transform.position;
         }
+    }
+
+    void Rotate()
+    {
+        gameObject.transform.rotation = Quaternion.Euler(0, 0, playerAttack.angle);
     }
 }

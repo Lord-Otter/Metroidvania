@@ -1,15 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private AttackScript attackScript;
+    private PlayerAttack playerAttack;
     private PlayerChecks playerChecks;
     private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
     private Transform playerTransform;
+    private TimeManager timeManager;
+    private CameraBehaviour cameraBehaviour;
+    private CapsuleCollider[] capsuleColliders;
 
 
     [Header("Run")]
@@ -39,14 +43,16 @@ public class PlayerMovement : MonoBehaviour
     private float dashDirection;
     public bool canDash = true;
 
-    [Header("Teleport")]
     private GameObject teleportTarget;
-    public float tpSpeed;
+    private GameObject finalTeleportTarget;
+    [Header("Teleport")]
+    public float tpMaxSpeed;
     public float tpAcceleration;
     public int tpLimitMax;
     public int tpLimit;
     public float tpCooldown;
-    public bool canTP;
+    public bool canTP = true;
+    public bool isTeleporting = false;
 
     [Header("Pogo")]
     public float pogoForce;
@@ -58,14 +64,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
-        attackScript = GetComponent<AttackScript>();
+        playerAttack = GetComponent<PlayerAttack>();
         playerChecks = GetComponent<PlayerChecks>();
         playerInputs = GetComponent<PlayerInputs>();
         playerVelocity = GetComponent<PlayerVelocity>();
         playerTransform = GetComponent<Transform>();
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
+        cameraBehaviour = GameObject.Find("Main Camera").GetComponent<CameraBehaviour>();
+        capsuleColliders = GetComponents<CapsuleCollider>();
 
         // Teleport
         teleportTarget = GameObject.Find("Teleport_Target");
+        finalTeleportTarget = GameObject.Find("Final_Teleport_Target");
     }
 
     void Start()
@@ -80,7 +90,15 @@ public class PlayerMovement : MonoBehaviour
         tpLimit = tpLimitMax;
     }
 
-    // Update is called once per frame
+    void Update()
+    {
+        // Teleport
+        if(playerInputs.teleporting && canTP && tpLimit > 0 && playerAttack.teleportProjectile.Count != 0)
+        {
+            StartCoroutine(StartTeleport());
+        }
+    }
+
     void FixedUpdate()
     {
         // Run
@@ -93,7 +111,7 @@ public class PlayerMovement : MonoBehaviour
         Dashing();
 
         // Teleport
-        Teleporting();
+        //Teleporting();
     }
 
     #region Run
@@ -138,6 +156,8 @@ public class PlayerMovement : MonoBehaviour
         playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }
     #endregion
+
+
 
     #region Jump
     void Jumping()
@@ -205,6 +225,8 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
+
+
     #region Dash
     void Dashing()
     {
@@ -259,21 +281,89 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
 
+
+
     #region Teleport
-    void Teleporting()
+    IEnumerator StartTeleport()
     {
         playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
 
-        if(playerInputs.teleporting && canTP)
-        {
-            //playerVelocity.velocity.y = 10;
+        playerVelocity.velocity = Vector3.zero;
 
-            playerTransform.position = teleportTarget.transform.position;
+        canTP = false;
+
+        ResetMovementAbilities();
+
+        capsuleColliders[0].enabled = false;
+        capsuleColliders[1].enabled = false;
+
+        isTeleporting = true;
+        cameraBehaviour.CameraIgnoreTimeScale(true);
+        
+        timeManager.lastTimeScale = timeManager.timeScale;
+        timeManager.timeScale = 0;
+
+        yield return new WaitForSecondsRealtime(0.0f);
+
+        float currentSpeed = 0;
+        Vector3 startPosition = transform.position;
+        float distance = Vector3.Distance(startPosition, teleportTarget.transform.position);
+
+        while (distance > 0.01f)
+        {
+            distance = Vector3.Distance(transform.position, teleportTarget.transform.position);
+
+            currentSpeed = Mathf.Min(currentSpeed + tpAcceleration * Time.fixedUnscaledDeltaTime, tpMaxSpeed);
+
+            transform.position = Vector3.MoveTowards(transform.position, teleportTarget.transform.position, currentSpeed * Time.fixedUnscaledDeltaTime);
+
+            yield return null;
         }
+
+        transform.position = teleportTarget.transform.position;
+
+        StartCoroutine(EndTeleport());
+
+        playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
+    }
+
+    IEnumerator EndTeleport()
+    {
+        playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
+
+        playerVelocity.velocity = Vector3.zero;
+
+        yield return new WaitForSecondsRealtime(0.25f);
+
+        float currentSpeed = 0;
+        Vector3 startPosition = transform.position;
+        float distance = Vector3.Distance(startPosition, finalTeleportTarget.transform.position);
+
+        while (distance > 0.01f)
+        {
+            distance = Vector3.Distance(transform.position, finalTeleportTarget.transform.position);
+
+            currentSpeed = Mathf.Min(currentSpeed + 25 + tpMaxSpeed * Time.fixedUnscaledDeltaTime, tpMaxSpeed);
+
+            transform.position = Vector3.MoveTowards(transform.position, finalTeleportTarget.transform.position, currentSpeed * Time.fixedUnscaledDeltaTime);
+
+            yield return null;
+        }
+
+        capsuleColliders[0].enabled = true;
+        capsuleColliders[1].enabled = true;
+
+        isTeleporting = false;
+        cameraBehaviour.CameraIgnoreTimeScale(false);
+        timeManager.timeScale = timeManager.lastTimeScale;
+
+        canTP = true;
 
         playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }
     #endregion
+
+
 
     #region Miscellaneous
         public void ResetMovementAbilities()

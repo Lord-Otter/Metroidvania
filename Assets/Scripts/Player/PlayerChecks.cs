@@ -6,7 +6,7 @@ using static PlayerInputs;
 
 public class PlayerChecks : MonoBehaviour
 {
-    private AttackScript attackScript;
+    private PlayerAttack playerAttack;
     private PlayerMovement playerMovement;
     private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
@@ -21,7 +21,7 @@ public class PlayerChecks : MonoBehaviour
 
     private void Awake()
     {
-        attackScript = GetComponent<AttackScript>();
+        playerAttack = GetComponent<PlayerAttack>();
         playerMovement = GetComponent<PlayerMovement>();
         playerInputs = GetComponent<PlayerInputs>();
         playerVelocity = GetComponent<PlayerVelocity>();

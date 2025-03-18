@@ -6,7 +6,7 @@ using UnityEngine.UIElements.Experimental;
 
 public class PlayerInputs : MonoBehaviour
 {
-    private AttackScript attackScript;
+    private PlayerAttack playerAttack;
     private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
     private PlayerVelocity playerVelocity;
@@ -52,7 +52,7 @@ public class PlayerInputs : MonoBehaviour
 
     private void Awake()
     {
-        attackScript = GetComponent<AttackScript>();
+        playerAttack = GetComponent<PlayerAttack>();
         playerMovement = GetComponent<PlayerMovement>();
         playerChecks = GetComponent<PlayerChecks>();
         playerVelocity = GetComponent<PlayerVelocity>();
@@ -69,7 +69,7 @@ public class PlayerInputs : MonoBehaviour
     {
         Controls();
 
-        if (attackScript.canAimAttack) 
+        if (playerAttack.canAimAttack) 
         {
             AimModeFunction();
         }
@@ -179,6 +179,8 @@ public class PlayerInputs : MonoBehaviour
         teleporting = Input.GetButtonDown("Teleport");
     }
     #endregion
+
+
 
     #region Aiming
     void AimModeFunction()

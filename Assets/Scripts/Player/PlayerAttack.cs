@@ -4,7 +4,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class AttackScript : MonoBehaviour
+public class PlayerAttack : MonoBehaviour
 {
     [Header("Player Components")]
     private PlayerMovement playerMovement;
@@ -31,6 +31,7 @@ public class AttackScript : MonoBehaviour
     public List<(GameObject projectile, float absAngleDifference)> critProjectiles = new List<(GameObject, float)>();
     public List<(GameObject projectile, float absAngleDifference)> tpProjectile = new List<(GameObject, float)>();
     public List<GameObject> teleportProjectile = new List<GameObject>();
+    public bool deflectSpread;
 
 
     [Header("Collider")]
@@ -44,7 +45,7 @@ public class AttackScript : MonoBehaviour
     public float downHeight;
     private float triggerDepth = 3;
     private float closestAngle;
-    private float angle;
+    [HideInInspector]public float angle;
 
     [Header("Testing")]
     private Renderer aimStickRenderer;
@@ -166,7 +167,11 @@ public class AttackScript : MonoBehaviour
             targetHealth.TakeDamage(attackDamage);
         }
     }
+    #endregion
+  
 
+
+    #region Deflection
     void DeflectProjectile(GameObject target)
     {
         ProjectileVelocity projectileVelocity = target.GetComponent<ProjectileVelocity>();
@@ -182,7 +187,14 @@ public class AttackScript : MonoBehaviour
         float absAngleDifference = Mathf.Abs(angleDifference);
 
         // Apply the new trajectory with the angleDifference offset
-        projectileVelocity.ChangeTrajectory(angle + angleDifference * 0.5f, absAngleDifference);
+        if(deflectSpread)
+        {
+            projectileVelocity.ChangeTrajectory(angle + angleDifference * 0.2f, absAngleDifference);
+        }
+        else
+        {
+            projectileVelocity.ChangeTrajectory(angle, absAngleDifference);
+        }
 
         // Check if this projectile should be added to teleportProjectile
         if (tpProjectile.Count == 0 || absAngleDifference < tpProjectile[0].absAngleDifference)
@@ -195,6 +207,8 @@ public class AttackScript : MonoBehaviour
         }
     }
     #endregion
+
+
 
     #region Move The Trigger
     void RotateAttackTrigger()

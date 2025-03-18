@@ -3,11 +3,11 @@ using UnityEngine;
 public class TimeManager : MonoBehaviour
 {
     public float timeScale = 1.0f;
-    private float lastTimeScale;
+    [HideInInspector]public float lastTimeScale;
 
     private void Start()
     {
-        lastTimeScale = timeScale;
+        //lastTimeScale = timeScale;
     }
 
     // Update is called once per frame
@@ -20,28 +20,32 @@ public class TimeManager : MonoBehaviour
             if (timeScale == 0)
             {
                 timeScale = lastTimeScale;
-                Debug.Log("Resume Time");
+                Debug.Log($"Time Scale: {timeScale * 100}% ");
             }
             else
             {
                 lastTimeScale = timeScale;
                 timeScale = 0;
+                Debug.Log("Stopping Time");
             }
         }
         
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             timeScale = 0.1f;
+            Debug.Log($"Time Scale: {timeScale * 100}% ");
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             timeScale = 0.5f;
+            Debug.Log($"Time Scale: {timeScale * 100}% ");
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             timeScale = 1;
+            Debug.Log($"Time Scale: {timeScale * 100}% ");
         }
     }
 

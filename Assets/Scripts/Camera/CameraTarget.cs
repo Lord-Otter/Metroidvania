@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using static PlayerInputs;
 
-public class CameraTargetScript : MonoBehaviour
+public class CameraTarget : MonoBehaviour
 {
     private PlayerChecks playerChecks;
     private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
+    private PlayerMovement playerMovement;
 
     [Header("Mouse Camera Behaviour")]
     public float mouseCamMultiplier = 0.1f;
@@ -28,6 +30,7 @@ public class CameraTargetScript : MonoBehaviour
         playerChecks = GetComponentInParent<PlayerChecks>();
         playerInputs = GetComponentInParent<PlayerInputs>();
         playerVelocity = GetComponentInParent<PlayerVelocity>();
+        playerMovement = GetComponentInParent<PlayerMovement>();
     }
 
     void Start()
@@ -35,51 +38,64 @@ public class CameraTargetScript : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
         MoveTarget();
     }
 
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+        //MoveTarget();
+    }
+
     void MoveTarget()
     {
-        if (playerInputs.aimMode == AimMode.Stick || playerInputs.aimMode == AimMode.Move)
+        if(!playerMovement.isTeleporting)
         {
-            if (playerVelocity.velocity.y > yOffsetThreshold || playerVelocity.velocity.y < -yOffsetThreshold)
+            if (playerInputs.aimMode == AimMode.Stick || playerInputs.aimMode == AimMode.Move)
             {
-                targetPosition = playerChecks.isFacingRight
-                    ? new Vector3(targetPositionX, targetPositionY + -yMovementOffset, 0)
-                    : new Vector3(-targetPositionX, targetPositionY + -yMovementOffset, 0);
+                if (playerVelocity.velocity.y > yOffsetThreshold || playerVelocity.velocity.y < -yOffsetThreshold)
+                {
+                    targetPosition = playerChecks.isFacingRight
+                        ? new Vector3(targetPositionX, targetPositionY + -yMovementOffset, 0)
+                        : new Vector3(-targetPositionX, targetPositionY + -yMovementOffset, 0);
+                }
+                else
+                {
+                    targetPosition = playerChecks.isFacingRight
+                        ? new Vector3(targetPositionX, targetPositionY, 0)
+                        : new Vector3(-targetPositionX, targetPositionY, 0);
+                }
+
+                Vector3 newPosition = transform.localPosition;
+
+                newPosition.x = Mathf.MoveTowards(transform.localPosition.x, targetPosition.x, Time.fixedUnscaledDeltaTime * speedX);
+                newPosition.y = Mathf.MoveTowards(transform.localPosition.y, targetPosition.y, Time.fixedUnscaledDeltaTime * speedY);
+
+                transform.localPosition = newPosition;
             }
-            else
+            else if (playerInputs.aimMode == AimMode.Mouse)
             {
-                targetPosition = playerChecks.isFacingRight
-                    ? new Vector3(targetPositionX, targetPositionY, 0)
-                    : new Vector3(-targetPositionX, targetPositionY, 0);
-            }
+                targetPosition = new Vector3(playerInputs.mousePosition.x, playerInputs.mousePosition.y, 0);
+                targetPosition.x = playerInputs.mousePosition.x;
 
-            Vector3 newPosition = transform.localPosition;
+                Vector3 newPosition = transform.localPosition;
+                    
+                newPosition.x = targetPosition.x * mouseCamMultiplier;
+                newPosition.y = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
 
-            newPosition.x = Mathf.MoveTowards(transform.localPosition.x, targetPosition.x, Time.deltaTime * speedX);
-            newPosition.y = Mathf.MoveTowards(transform.localPosition.y, targetPosition.y, Time.deltaTime * speedY);
+                newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
+                newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);           
 
-            transform.localPosition = newPosition;
-        }
-        else if (playerInputs.aimMode == AimMode.Mouse)
-        {
-            targetPosition = new Vector3(playerInputs.mousePosition.x, playerInputs.mousePosition.y, 0);
-            targetPosition.x = playerInputs.mousePosition.x;
-
-            Vector3 newPosition = transform.localPosition;
+                transform.localPosition = newPosition;
                 
-            newPosition.x = targetPosition.x * mouseCamMultiplier;
-            newPosition.y = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
-
-            newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
-            newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);           
-
-            transform.localPosition = newPosition;
-            
+            }
+        }
+        else
+        {
+            targetPosition = new Vector3(0, 1, 0);
+            transform.localPosition = targetPosition;
         }
     }
 }

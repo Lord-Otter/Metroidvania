@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class ProjectileVelocity : MonoBehaviour
 {
+    private PlayerAttack playerAttack;
+
     [HideInInspector] public Rigidbody rigidBody;
     [HideInInspector] public Vector3 velocity;
     [HideInInspector] public new Transform transform;
@@ -17,6 +19,8 @@ public class ProjectileVelocity : MonoBehaviour
 
     private void Awake()
     {
+        playerAttack = GameObject.Find("Player").GetComponent<PlayerAttack>();
+
         transform = GetComponent<Transform>();
         rigidBody = GetComponent<Rigidbody>();
     }
@@ -30,6 +34,14 @@ public class ProjectileVelocity : MonoBehaviour
     void Update()
     {
         
+    }
+
+    void OnDestroy()
+    {
+        if (playerAttack.teleportProjectile.Contains(gameObject))
+        {
+            playerAttack.teleportProjectile.Clear();
+        }
     }
 
     void FixedUpdate()
