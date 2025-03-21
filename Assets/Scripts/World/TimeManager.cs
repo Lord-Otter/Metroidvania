@@ -45,12 +45,12 @@ public class TimeManager : MonoBehaviour
     {
         if(pause)
         {
-            Debug.Log("Physics Pause");
+            Debug.Log("World Pause");
             worldPause = true;
         }
         else
         {
-            Debug.Log("Physics Unpause");
+            Debug.Log("World Unpause");
             worldPause = false;
 
             projectileVelocity.OnResume();

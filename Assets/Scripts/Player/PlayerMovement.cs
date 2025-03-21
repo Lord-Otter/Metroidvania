@@ -42,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
     private bool dashCooldownReset;
     private bool dashGroundReset;
     private float dashStartTime;
+    private Vector3 dashStartPosition;
     [HideInInspector]public bool isDashing = false;
     private float dashDirection;
     public bool canDash = true;
@@ -255,6 +256,7 @@ public class PlayerMovement : MonoBehaviour
         if (playerInputs.dashing && canDash)
         {
             dashStartTime = Time.time;
+            dashStartPosition = transform.position;
             dashCooldownReset = false;
             dashGroundReset = false;
             canDash = false;
@@ -269,7 +271,24 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        //KEEP WORKING ----------------------------------------------------------------------------
         if (isDashing)
+        {
+            playerVelocity.velocity.y = 0;
+
+            if(Mathf.Abs(transform.position.x - dashStartPosition.x) >= dashRange)
+            {
+                playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
+                StartCoroutine(DashCooldown());
+                isDashing = false;
+            }
+            else
+            {
+                playerVelocity.velocity.x = dashDirection * dashSpeed;
+            }
+        }
+        
+        /*if (isDashing)
         {
             playerVelocity.velocity.y = 0;
             playerVelocity.velocity.x = dashDirection * dashSpeed;
@@ -283,7 +302,7 @@ public class PlayerMovement : MonoBehaviour
                 StartCoroutine(DashCooldown());
                 isDashing = false;
             }
-        }
+        }*/
 
         playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }
