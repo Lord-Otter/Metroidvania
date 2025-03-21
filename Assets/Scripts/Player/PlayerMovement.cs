@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Cinemachine;
+using Unity.Android.Gradle;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -12,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerVelocity playerVelocity;
     private Transform playerTransform;
     private TimeManager timeManager;
+    private CustomTimeSolution customTimeSolution;
     private CameraBehaviour cameraBehaviour;
     private CapsuleCollider[] capsuleColliders;
 
@@ -50,6 +53,9 @@ public class PlayerMovement : MonoBehaviour
     public float tpAcceleration;
     public int tpLimitMax;
     public int tpLimit;
+    private float tpStartTime;
+    public float tpStartDelay;    
+    private float currentTPSpeed;
     public float tpCooldown;
     public bool canTP = true;
     public bool isTeleporting = false;
@@ -70,6 +76,7 @@ public class PlayerMovement : MonoBehaviour
         playerVelocity = GetComponent<PlayerVelocity>();
         playerTransform = GetComponent<Transform>();
         timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
+        customTimeSolution = GameObject.Find("Time_Manager").GetComponent<CustomTimeSolution>();
         cameraBehaviour = GameObject.Find("Main Camera").GetComponent<CameraBehaviour>();
         capsuleColliders = GetComponents<CapsuleCollider>();
 
@@ -92,15 +99,24 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // Teleport
-        if(playerInputs.teleporting && canTP && tpLimit > 0 && playerAttack.teleportProjectile.Count != 0)
-        {
-            StartCoroutine(StartTeleport());
-        }
+        
     }
 
     void FixedUpdate()
     {
+        if(timeManager.worldPause)
+        {
+            return;
+        }
+
+        // Teleport
+        Teleporting();
+
+        if(timeManager.tpPause)
+        {
+            return;
+        }
+
         // Run
         Movement();
 
@@ -110,8 +126,7 @@ public class PlayerMovement : MonoBehaviour
         // Dash
         Dashing();
 
-        // Teleport
-        //Teleporting();
+        
     }
 
     #region Run
@@ -284,80 +299,54 @@ public class PlayerMovement : MonoBehaviour
 
 
     #region Teleport
-    IEnumerator StartTeleport()
+    void Teleporting()
     {
         playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
 
-        playerVelocity.velocity = Vector3.zero;
-
-        canTP = false;
-
-        ResetMovementAbilities();
-
-        capsuleColliders[0].enabled = false;
-        capsuleColliders[1].enabled = false;
-
-        isTeleporting = true;
-        cameraBehaviour.CameraIgnoreTimeScale(true);
-        
-        timeManager.lastTimeScale = timeManager.timeScale;
-        timeManager.timeScale = 0;
-
-        yield return new WaitForSecondsRealtime(0.0f);
-
-        float currentSpeed = 0;
-        Vector3 startPosition = transform.position;
-        float distance = Vector3.Distance(startPosition, teleportTarget.transform.position);
-
-        while (distance > 0.01f)
+        if(playerInputs.teleporting && canTP)
         {
-            distance = Vector3.Distance(transform.position, teleportTarget.transform.position);
+            canTP = false;
+            isTeleporting = true;
+            tpStartTime = Time.time;
 
-            currentSpeed = Mathf.Min(currentSpeed + tpAcceleration * Time.fixedUnscaledDeltaTime, tpMaxSpeed);
+            playerVelocity.velocity = Vector3.zero;
 
-            transform.position = Vector3.MoveTowards(transform.position, teleportTarget.transform.position, currentSpeed * Time.fixedUnscaledDeltaTime);
+            ResetMovementAbilities();
 
-            yield return null;
+            capsuleColliders[0].enabled = false;
+            capsuleColliders[1].enabled = false;
+
+            timeManager.TPPause(true);
         }
 
-        transform.position = teleportTarget.transform.position;
-
-        StartCoroutine(EndTeleport());
-
-        playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
-    }
-
-    IEnumerator EndTeleport()
-    {
-        playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
-
-        playerVelocity.velocity = Vector3.zero;
-
-        yield return new WaitForSecondsRealtime(0.25f);
-
-        float currentSpeed = 0;
-        Vector3 startPosition = transform.position;
-        float distance = Vector3.Distance(startPosition, finalTeleportTarget.transform.position);
-
-        while (distance > 0.01f)
+        if(isTeleporting && Time.time - tpStartTime > tpStartDelay)
         {
-            distance = Vector3.Distance(transform.position, finalTeleportTarget.transform.position);
+            Vector3 targetPos = teleportTarget.transform.position;
+            Vector3 direction = (targetPos - transform.position).normalized;
+            float distance = Vector3.Distance(transform.position, targetPos);
 
-            currentSpeed = Mathf.Min(currentSpeed + 25 + tpMaxSpeed * Time.fixedUnscaledDeltaTime, tpMaxSpeed);
+            currentTPSpeed = Mathf.Min(currentTPSpeed + tpAcceleration * Time.fixedDeltaTime, tpMaxSpeed);
 
-            transform.position = Vector3.MoveTowards(transform.position, finalTeleportTarget.transform.position, currentSpeed * Time.fixedUnscaledDeltaTime);
+            if (distance < currentTPSpeed * Time.fixedDeltaTime)
+            {
+                transform.position = targetPos;
 
-            yield return null;
+                isTeleporting = false;
+                canTP = true;
+
+                capsuleColliders[0].enabled = true;
+                capsuleColliders[1].enabled = true;
+
+                timeManager.TPPause(false);
+
+                currentTPSpeed = 0f;
+            }
+            else
+            {
+                // Continue moving toward the target
+                transform.position += direction * currentTPSpeed * Time.fixedDeltaTime;
+            }
         }
-
-        capsuleColliders[0].enabled = true;
-        capsuleColliders[1].enabled = true;
-
-        isTeleporting = false;
-        cameraBehaviour.CameraIgnoreTimeScale(false);
-        timeManager.timeScale = timeManager.lastTimeScale;
-
-        canTP = true;
 
         playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }
@@ -365,8 +354,8 @@ public class PlayerMovement : MonoBehaviour
 
 
 
-    #region Miscellaneous
-        public void ResetMovementAbilities()
+    #region Miscellaneous   
+    public void ResetMovementAbilities()
     {
         dashGroundReset = true;
         airJumps = maxAirJumps;

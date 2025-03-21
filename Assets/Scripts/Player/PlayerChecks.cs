@@ -11,6 +11,8 @@ public class PlayerChecks : MonoBehaviour
     private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
 
+    private TimeManager timeManager;
+
     public enum RotateMode { Aim, Movement }
     [Header("Player Orientation")]
     public RotateMode rotateMode;
@@ -25,6 +27,8 @@ public class PlayerChecks : MonoBehaviour
         playerMovement = GetComponent<PlayerMovement>();
         playerInputs = GetComponent<PlayerInputs>();
         playerVelocity = GetComponent<PlayerVelocity>();
+
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
     }
 
     void Start()
@@ -34,7 +38,12 @@ public class PlayerChecks : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {       
+    {
+        if(timeManager.tpPause)
+        {
+            return;
+        }
+
         if(!playerMovement.isDashing)
         { 
             IsFacingRight();

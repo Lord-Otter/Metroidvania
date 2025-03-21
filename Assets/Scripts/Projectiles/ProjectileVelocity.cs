@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ProjectileVelocity : MonoBehaviour
 {
     private PlayerAttack playerAttack;
+    private TimeManager timeManager;
 
     [HideInInspector] public Rigidbody rigidBody;
     [HideInInspector] public Vector3 velocity;
@@ -17,9 +19,13 @@ public class ProjectileVelocity : MonoBehaviour
     public bool isCritical = false;
     public float angleDifference;
 
+    // Paused
+    private Vector3 pauseVelocity;
+
     private void Awake()
     {
         playerAttack = GameObject.Find("Player").GetComponent<PlayerAttack>();
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
 
         transform = GetComponent<Transform>();
         rigidBody = GetComponent<Rigidbody>();
@@ -46,6 +52,18 @@ public class ProjectileVelocity : MonoBehaviour
 
     void FixedUpdate()
     {
+        if(timeManager.worldPause)
+        {
+            OnPause();
+            return;
+        }
+
+        if(timeManager.tpPause)
+        {
+            OnPause();
+            return;
+        }
+
         Traveling();
     }
 
@@ -62,5 +80,16 @@ public class ProjectileVelocity : MonoBehaviour
     {
         transform.rotation = Quaternion.Euler(0, 0, angle);
         angleDifference = angleDiff;
+    }
+
+    void OnPause()
+    {
+        pauseVelocity = velocity;
+        rigidBody.linearVelocity = Vector3.zero;
+    }
+
+    public void OnResume()
+    {
+        velocity = pauseVelocity;
     }
 }

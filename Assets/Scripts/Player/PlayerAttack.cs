@@ -6,11 +6,12 @@ using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
-    [Header("Player Components")]
+    [Header("References")]
     private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
     private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
+    private TimeManager timeManager;
 
     [Header("Player Attack")]
     public int attackDamage;
@@ -58,7 +59,7 @@ public class PlayerAttack : MonoBehaviour
 
     private void Awake()
     {
-        // Player Components
+        // References
         playerMovement = GetComponent<PlayerMovement>();
         playerChecks = GetComponent<PlayerChecks>();
         playerInputs = GetComponent<PlayerInputs>();
@@ -66,8 +67,12 @@ public class PlayerAttack : MonoBehaviour
 
         attackTrigger = GetComponentInChildren<BoxCollider>();
 
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
+
         // Testing
         aimStickRenderer = GameObject.Find("Attack_Direction_Visual").GetComponent<Renderer>();
+
+
     }
 
     void Start()
@@ -77,6 +82,16 @@ public class PlayerAttack : MonoBehaviour
 
     void Update()
     {
+        if(timeManager.worldPause)
+        {
+            return;
+        }
+
+        if(timeManager.tpPause)
+        {
+            return;
+        }
+
         if (canAimAttack) // Makes sure the player can't redirect their attack while it's happening
         {
             RotateAttackTrigger();

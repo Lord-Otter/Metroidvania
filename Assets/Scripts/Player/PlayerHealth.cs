@@ -15,13 +15,17 @@ public class PlayerHealth : MonoBehaviour
     [Header("Death")]
     private Renderer playerRenderer;
 
-    // Start is called before the first frame update
+    void Awake()
+    {
+        // Renderer
+        playerRenderer = GameObject.Find("Player_Visuals").GetComponent<Renderer>();
+    }
+
     void Start()
     {
         health = maxHealth;
 
-        // Renderer
-        playerRenderer = GameObject.Find("Player_Visuals").GetComponent<Renderer>();
+        
     }
 
     // Update is called once per frame

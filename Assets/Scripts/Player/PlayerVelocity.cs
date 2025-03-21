@@ -8,6 +8,7 @@ public class PlayerVelocity : MonoBehaviour
     private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
     private PlayerInputs playerInputs;
+    private TimeManager timeManager;
 
     [HideInInspector] public Rigidbody rigidBody;
     [HideInInspector] public Vector3 velocity;
@@ -17,12 +18,16 @@ public class PlayerVelocity : MonoBehaviour
     public float jumpGravity = 10f;
     public float maxFallSpeed = 20f;
 
+    [Header("Pause")]
+    private Vector3 pauseVelocity;
+
     private void Awake()
     {
         playerAttack = GetComponent<PlayerAttack>();
         playerMovement = GetComponent<PlayerMovement>();
         playerChecks = GetComponent<PlayerChecks>();
         playerInputs = GetComponent<PlayerInputs>();
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
 
         rigidBody = GetComponent<Rigidbody>();
     }
@@ -35,6 +40,18 @@ public class PlayerVelocity : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if(timeManager.worldPause)
+        {
+            OnPause();
+            return;
+        }
+
+        if(timeManager.tpPause)
+        {
+            OnPause();
+            return;
+        }
+
         Physics();
     }
 
@@ -54,5 +71,16 @@ public class PlayerVelocity : MonoBehaviour
         }
 
         rigidBody.linearVelocity = velocity;
+    }
+
+    void OnPause()
+    {
+        pauseVelocity = velocity;
+        rigidBody.linearVelocity = Vector3.zero;
+    }
+
+    public void OnResume()
+    {
+        rigidBody.linearVelocity = pauseVelocity;
     }
 }

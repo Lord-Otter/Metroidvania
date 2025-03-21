@@ -222,7 +222,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &64935441
 Transform:
   m_ObjectHideFlags: 0
@@ -7210,10 +7210,11 @@ MonoBehaviour:
   dashCooldown: 0.5
   isDashing: 0
   canDash: 1
-  tpMaxSpeed: 250
+  tpMaxSpeed: 500
   tpAcceleration: 100
   tpLimitMax: 3
   tpLimit: 0
+  tpStartDelay: 0
   tpCooldown: 0
   canTP: 1
   isTeleporting: 0
@@ -7662,6 +7663,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1282595033}
+  - component: {fileID: 1282595034}
   - component: {fileID: 1282595032}
   m_Layer: 0
   m_Name: Time_Manager
@@ -7682,6 +7684,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a32da295a99aa40a72c922cd7de7b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trainingProjectile: {fileID: 5536923785135866504, guid: 6966f3e5a88b3964493b880799fd752f, type: 3}
+  physicsPause: 0
+  tpPause: 0
   timeScale: 1
   lastTimeScale: 0
 --- !u!4 &1282595033
@@ -7699,6 +7704,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1282595034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1282595031}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdc62ae510a628347b81749091ca888c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trainingProjectile: {fileID: 5536923785135866504, guid: 6966f3e5a88b3964493b880799fd752f, type: 3}
+  tpPause: 0
 --- !u!1 &1300907540
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,6 +10,8 @@ public class PlayerInputs : MonoBehaviour
     private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
     private PlayerVelocity playerVelocity;
+
+    private TimeManager timeManager;
     
     public enum AimMode { Mouse, Stick, Move }
     [Header("Aiming Mode")]
@@ -57,6 +59,8 @@ public class PlayerInputs : MonoBehaviour
         playerChecks = GetComponent<PlayerChecks>();
         playerVelocity = GetComponent<PlayerVelocity>();
 
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
+
         aimObject = GameObject.Find("Attack_Direction").transform;
     }
 
@@ -67,6 +71,16 @@ public class PlayerInputs : MonoBehaviour
 
     void Update()
     {
+        if(timeManager.worldPause)
+        {
+            return;
+        }
+
+        if(timeManager.tpPause)
+        {
+            return;
+        }
+
         Controls();
 
         if (playerAttack.canAimAttack) 
