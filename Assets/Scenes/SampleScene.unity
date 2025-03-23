@@ -7685,7 +7685,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trainingProjectile: {fileID: 5536923785135866504, guid: 6966f3e5a88b3964493b880799fd752f, type: 3}
-  physicsPause: 0
+  worldPause: 0
   tpPause: 0
   timeScale: 1
   lastTimeScale: 0
@@ -7728,7 +7728,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1300907541}
   - component: {fileID: 1300907545}
-  - component: {fileID: 1300907546}
   m_Layer: 0
   m_Name: Attack_Direction
   m_TagString: Untagged
@@ -7760,27 +7759,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1300907540}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!65 &1300907546
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1300907540}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.25, y: 1, z: 1}
-  m_Center: {x: 1.62, y: 0, z: 0}
 --- !u!1 &1371197992
 GameObject:
   m_ObjectHideFlags: 0

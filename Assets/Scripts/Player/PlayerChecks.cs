@@ -44,6 +44,8 @@ public class PlayerChecks : MonoBehaviour
             return;
         }
 
+        IsTouchingWall();
+
         if(!playerMovement.isDashing)
         { 
             IsFacingRight();
@@ -79,11 +81,11 @@ public class PlayerChecks : MonoBehaviour
 
     public bool IsTouchingWall()
     {
-        Vector3 origin1 = transform.position + new Vector3(0f, 0f, 0f);
-        Vector3 origin2 = transform.position + new Vector3(0f, 0f, 0f);
-        Vector3 direction1 = Vector3.right;
+        Vector3 origin1 = transform.position + new Vector3(0.55f, 0.5f, 0f);
+        Vector3 origin2 = transform.position + new Vector3(0.55f, -0.5f, 0f);
+        Vector3 direction1 = Vector3.left;
         Vector3 direction2 = Vector3.left;
-        float raycastDistance = 0.55f;
+        float raycastDistance = 1.1f;
 
         Debug.DrawRay(origin1, direction1 * raycastDistance, Color.red);
         Debug.DrawRay(origin2, direction2 * raycastDistance, Color.red);
@@ -96,6 +98,10 @@ public class PlayerChecks : MonoBehaviour
             playerMovement.ResetMovementAbilities();
         }*/
 
+        if(hit1 || hit2)
+        {
+            Debug.Log($"wall hit {hit1 || hit2}");
+        }
         return hit1 || hit2;
     }
 

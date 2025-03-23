@@ -325,6 +325,7 @@ public class PlayerMovement : MonoBehaviour
         if(playerInputs.teleporting && canTP)
         {
             canTP = false;
+            playerInputs.teleporting = false;
             isTeleporting = true;
             tpStartTime = Time.time;
 
