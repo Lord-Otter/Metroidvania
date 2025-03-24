@@ -21,6 +21,9 @@ public class PlayerChecks : MonoBehaviour
     [Header("Ground Check")]
     public LayerMask groundLayer;
 
+    [Header("Wall Check")]
+    public LayerMask wallLayer;
+
     private void Awake()
     {
         playerAttack = GetComponent<PlayerAttack>();
@@ -43,71 +46,169 @@ public class PlayerChecks : MonoBehaviour
         {
             return;
         }
-
-        IsTouchingWall();
-
-        if(!playerMovement.isDashing)
-        { 
-            IsFacingRight();
-        }
+        //BoxCast();
+        UpdateFacingDirection();
     }
 
     public bool IsGrounded()
     {
-        Vector3 origin1 = transform.position + new Vector3(-0.4f, 0f, 0f);
-        Vector3 origin2 = transform.position + new Vector3(0.4f, 0f, 0f);
-        Vector3 originC = transform.position + new Vector3(00f, 0f, 0f);
+        Vector3 originL = transform.position + new Vector3(-0.4f, 0, 0);
+        Vector3 originM = transform.position + new Vector3(0, 0, 0);
+        Vector3 originR = transform.position + new Vector3(0.4f, 0, 0);
         Vector3 direction = Vector3.down;
         float raycastDistance = 1.1f;
 
-        Vector3 directionC = Vector3.down;
-        float raycastDistanceC = 1.1f;
+        //Debug.DrawRay(originL, direction * raycastDistance, Color.red);
+        //Debug.DrawRay(originM, direction * raycastDistance, Color.red);
+        //Debug.DrawRay(originR, direction * raycastDistance, Color.red);
 
-        Debug.DrawRay(origin1, direction * raycastDistance, Color.red);
-        Debug.DrawRay(origin2, direction * raycastDistance, Color.red);
-        Debug.DrawRay(originC, directionC * raycastDistanceC, Color.red);
+        bool hitL = Physics.Raycast(originL, direction, raycastDistance, groundLayer);
+        bool hitM = Physics.Raycast(originM, direction, raycastDistance, groundLayer);
+        bool hitR = Physics.Raycast(originR, direction, raycastDistance, groundLayer);
 
-        bool hit1 = Physics.Raycast(origin1, direction, raycastDistance, groundLayer);
-        bool hit2 = Physics.Raycast(origin2, direction, raycastDistance, groundLayer);
-        bool hitC = Physics.Raycast(origin2, directionC, raycastDistanceC, groundLayer);
-
-        if(hit1 || hit2 || hitC)
+        if(hitL || hitM || hitR)
         {
             playerMovement.ResetMovementAbilities();
         }
         
-        return hit1 || hit2 || hitC;
+        return hitL || hitM || hitR;
     }
 
-    public bool IsTouchingWall()
+    /*public bool IsTouchingWallR()
     {
-        Vector3 origin1 = transform.position + new Vector3(0.55f, 0.5f, 0f);
-        Vector3 origin2 = transform.position + new Vector3(0.55f, -0.5f, 0f);
-        Vector3 direction1 = Vector3.left;
-        Vector3 direction2 = Vector3.left;
-        float raycastDistance = 1.1f;
+        Vector3 originU = transform.position + new Vector3(0, 0.5f, 0);
+        Vector3 originM = transform.position + new Vector3(0, 0, 0);
+        Vector3 originB = transform.position + new Vector3(0, -0.5f, 0);
+        Vector3 direction = Vector3.right;
+        float raycastDistance = 0.55f;
 
-        Debug.DrawRay(origin1, direction1 * raycastDistance, Color.red);
-        Debug.DrawRay(origin2, direction2 * raycastDistance, Color.red);
+        //Debug.DrawRay(originU, direction * raycastDistance, Color.red);
+        //Debug.DrawRay(originM, direction * raycastDistance, Color.red);
+        //Debug.DrawRay(originB, direction * raycastDistance, Color.red);
 
-        bool hit1 = Physics.Raycast(origin1, direction1, raycastDistance);
-        bool hit2 = Physics.Raycast(origin2, direction2, raycastDistance);
+        bool hitU = Physics.Raycast(originU, direction, raycastDistance, wallLayer);
+        bool hitM = Physics.Raycast(originM, direction, raycastDistance, wallLayer);
+        bool hitB = Physics.Raycast(originB, direction, raycastDistance, wallLayer);
 
-        /*if(hit1 || hit2)
+        return hitU || hitM || hitB;
+    }*/
+
+    public bool IsTouchingWallR()
+    {
+        Vector3 origin = transform.position; // Single origin at object position
+        Vector3 halfExtents = new Vector3(0.18f, 0.5f, 0); // Box size (adjust as needed)
+        Vector3 direction = Vector3.right;
+        float raycastDistance = 0.36f;
+
+        // Debug Draw the BoxCast
+        DebugDrawBoxCast(origin, halfExtents, direction, raycastDistance, Color.red);
+
+        // Perform the BoxCast
+        bool hitWall = Physics.BoxCast(origin, halfExtents, direction, 
+                                    out RaycastHit hit, Quaternion.identity, 
+                                    raycastDistance, wallLayer);
+        if(hitWall)
+        {
+            Debug.Log("LMAO GOTEEM");
+        }
+        return hitWall;
+    }
+
+    void DebugDrawBoxCast(Vector3 position, Vector3 halfExtents, Vector3 direction, float distance, Color color)
+    {
+        Vector3 endPosition = position + direction.normalized * distance;
+
+        // Draw initial and final boxes
+        DebugDrawBox(position, halfExtents, color);
+        DebugDrawBox(endPosition, halfExtents, color);
+
+        // Draw the cast line
+        //Debug.DrawLine(position, endPosition, color);
+    }
+
+    void DebugDrawBox(Vector3 center, Vector3 halfExtents, Color color)
+    {
+        Vector3[] corners = new Vector3[8];
+
+        for (int i = 0; i < 8; i++)
+        {
+            corners[i] = center + new Vector3(
+                (i & 1) == 0 ? -halfExtents.x : halfExtents.x,
+                (i & 2) == 0 ? -halfExtents.y : halfExtents.y,
+                (i & 4) == 0 ? -halfExtents.z : halfExtents.z
+            );
+        }
+
+        // Connect edges of the box
+        Debug.DrawLine(corners[0], corners[1], color);
+        Debug.DrawLine(corners[1], corners[3], color);
+        Debug.DrawLine(corners[3], corners[2], color);
+        Debug.DrawLine(corners[2], corners[0], color);
+
+        Debug.DrawLine(corners[4], corners[5], color);
+        Debug.DrawLine(corners[5], corners[7], color);
+        Debug.DrawLine(corners[7], corners[6], color);
+        Debug.DrawLine(corners[6], corners[4], color);
+
+        Debug.DrawLine(corners[0], corners[4], color);
+        Debug.DrawLine(corners[1], corners[5], color);
+        Debug.DrawLine(corners[2], corners[6], color);
+        Debug.DrawLine(corners[3], corners[7], color);
+    }
+
+    public bool AttachedToRWall()
+    {
+        if(IsTouchingWallR() && !IsGrounded() && playerInputs.movingRight)
         {
             playerMovement.ResetMovementAbilities();
-        }*/
-
-        if(hit1 || hit2)
-        {
-            Debug.Log($"wall hit {hit1 || hit2}");
+            Debug.Log("Checking Right Wall...");
+            return true;
         }
-        return hit1 || hit2;
+        else
+        {
+            return false;
+        }
     }
 
-    void IsFacingRight()
+    public bool IsTouchingWallL()
     {
-        RotateModeFunctions();
+        Vector3 originU = transform.position + new Vector3(0, 0.5f, 0);
+        Vector3 originM = transform.position + new Vector3(0, 0, 0);
+        Vector3 originB = transform.position + new Vector3(0, -0.5f, 0);
+        Vector3 direction = Vector3.left;
+        float raycastDistance = 0.55f;
+
+        //Debug.DrawRay(originU, direction * raycastDistance, Color.red);
+        //Debug.DrawRay(originM, direction * raycastDistance, Color.red);
+        //Debug.DrawRay(originB, direction * raycastDistance, Color.red);
+
+        bool hitU = Physics.Raycast(originU, direction, raycastDistance, wallLayer);
+        bool hitM = Physics.Raycast(originM, direction, raycastDistance, wallLayer);
+        bool hitB = Physics.Raycast(originB, direction, raycastDistance, wallLayer);
+
+        return hitU || hitM || hitB;
+    }
+
+    public bool AttachedToLWall()
+    {
+        if(IsTouchingWallL() && !IsGrounded() && playerInputs.movingLeft)
+        {
+            playerMovement.ResetMovementAbilities();
+            Debug.Log("Checking Left Wall...");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    void UpdateFacingDirection()
+    {
+        if (!playerMovement.isDashing)
+        {
+            RotateModeFunctions();
+        }
     }
 
     void RotateModeFunctions()
@@ -126,7 +227,57 @@ public class PlayerChecks : MonoBehaviour
     void RotateAim()
     {
         float aimAngle = playerInputs.aimObject.rotation.eulerAngles.z;
-        if(playerInputs.inputDirectionR.magnitude == 0 && playerInputs.aimMode == AimMode.Stick)
+
+        if(AttachedToRWall() && playerVelocity.velocity.y <= 0)
+        {
+            isFacingRight = false;
+        }
+        else if(AttachedToLWall() && playerVelocity.velocity.y <= 0)
+        {
+            isFacingRight = true;
+        }
+        else
+        {
+            if(playerInputs.inputDirectionR.magnitude == 0 && playerInputs.aimMode == AimMode.Stick)
+            {
+                if (playerInputs.movingRight && !playerInputs.movingLeft)
+                {
+                    isFacingRight = true;
+                }
+                else if (!playerInputs.movingRight && playerInputs.movingLeft)
+                {
+                    isFacingRight = false;
+                }
+            }
+            else
+            {
+                if (aimAngle < 90 || aimAngle > 270)
+                {
+                    isFacingRight = true;
+                }
+                else if (aimAngle == 90 || aimAngle == 270)
+                {
+
+                }
+                else
+                {
+                    isFacingRight = false;
+                }
+            }
+        }
+    }
+
+    void RotateMove()
+    {
+        if(IsTouchingWallR() && playerInputs.movingRight)
+        {
+            isFacingRight = false;
+        }
+        else if(IsTouchingWallL() && playerInputs.movingLeft)
+        {
+            isFacingRight = true;
+        }
+        else
         {
             if (playerInputs.movingRight && !playerInputs.movingLeft)
             {
@@ -136,33 +287,6 @@ public class PlayerChecks : MonoBehaviour
             {
                 isFacingRight = false;
             }
-        }
-        else
-        {
-            if (aimAngle < 90 || aimAngle > 270)
-            {
-                isFacingRight = true;
-            }
-            else if (aimAngle == 90 || aimAngle == 270)
-            {
-
-            }
-            else
-            {
-                isFacingRight = false;
-            }
-        }
-    }
-
-    void RotateMove()
-    {
-        if (playerInputs.movingRight && !playerInputs.movingLeft)
-        {
-            isFacingRight = true;
-        }
-        else if (!playerInputs.movingRight && playerInputs.movingLeft)
-        {
-            isFacingRight = false;
         }
     }
 }

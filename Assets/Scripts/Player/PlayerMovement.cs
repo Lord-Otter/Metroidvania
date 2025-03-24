@@ -43,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
     private bool dashGroundReset;
     private float dashStartTime;
     private Vector3 dashStartPosition;
-    [HideInInspector]public bool isDashing = false;
+    public bool isDashing = false;
     private float dashDirection;
     public bool canDash = true;
 
@@ -198,7 +198,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Coyote Jump
-        if (playerChecks.IsGrounded())
+        if (playerChecks.IsGrounded() || playerChecks.AttachedToRWall() || playerChecks.AttachedToLWall())
         {
             airTimeStart = Time.time;
             canJump = true;
@@ -261,13 +261,25 @@ public class PlayerMovement : MonoBehaviour
             dashGroundReset = false;
             canDash = false;
             isDashing = true;
+
             if(!playerInputs.movingRight && !playerInputs.movingLeft)
             {
                 dashDirection = playerChecks.isFacingRight ? 1f : -1f;
             }
             else
             {
-                dashDirection = playerInputs.movingRight ? 1f : -1f;
+                if(playerChecks.AttachedToRWall() || (playerChecks.IsTouchingWallR() && !playerChecks.isFacingRight))
+                {
+                    dashDirection = -1f;
+                }
+                else if(playerChecks.AttachedToLWall())
+                {
+                    dashDirection = 1f;
+                }
+                else
+                {
+                    dashDirection = playerInputs.movingRight ? 1f : -1f;
+                }
             }
         }
 
@@ -275,6 +287,19 @@ public class PlayerMovement : MonoBehaviour
         if (isDashing)
         {
             playerVelocity.velocity.y = 0;
+
+            if(playerChecks.IsTouchingWallR() && playerChecks.isFacingRight) //<---------Fix this. It makes the player stick to walls when facing the other way and dashing into it
+            {
+                playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
+                StartCoroutine(DashCooldown());
+                isDashing = false;
+            }
+            else if(playerChecks.IsTouchingWallL() && !playerChecks.isFacingRight)
+            {
+                playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
+                StartCoroutine(DashCooldown());
+                isDashing = false;
+            }        
 
             if(Mathf.Abs(transform.position.x - dashStartPosition.x) >= dashRange)
             {
@@ -287,22 +312,6 @@ public class PlayerMovement : MonoBehaviour
                 playerVelocity.velocity.x = dashDirection * dashSpeed;
             }
         }
-        
-        /*if (isDashing)
-        {
-            playerVelocity.velocity.y = 0;
-            playerVelocity.velocity.x = dashDirection * dashSpeed;
-
-            float dashDuration = dashRange / dashSpeed;
-
-            // Dash Duration
-            if ((Time.time - dashStartTime) > dashDuration)
-            {
-                playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
-                StartCoroutine(DashCooldown());
-                isDashing = false;
-            }
-        }*/
 
         playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
     }

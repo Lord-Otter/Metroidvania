@@ -14,9 +14,11 @@ public class PlayerVelocity : MonoBehaviour
     [HideInInspector] public Vector3 velocity;
 
     // Physics
-    public float gravity = 15f;
-    public float jumpGravity = 10f;
+    public float gravity = 17.5f;
+    public float jumpGravity = 15f;
     public float maxFallSpeed = 20f;
+    public float wallSlideGravity = 8f;
+    public float wallSlideMaxSpeed = 10f;
 
     [Header("Pause")]
     private Vector3 pauseVelocity;
@@ -52,19 +54,24 @@ public class PlayerVelocity : MonoBehaviour
             return;
         }
 
-        Physics();
+        Physics();        
     }
 
     public void Physics()
     {
         velocity = rigidBody.linearVelocity;
 
-        if (!playerMovement.isDashing &&  playerInputs.highJumping && velocity.y > 0)
+        if((playerChecks.AttachedToRWall() || playerChecks.AttachedToLWall()) && velocity.y < 0)  // Gravity while wall sliding
+        {
+            velocity.y -= wallSlideGravity * Time.fixedDeltaTime;
+            velocity.y = Mathf.Max(velocity.y, -wallSlideMaxSpeed);
+        }
+        else if (!playerMovement.isDashing &&  playerInputs.highJumping && velocity.y > 0) // Gravity while jumping
         {
             velocity.y -= jumpGravity * Time.fixedDeltaTime;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
-        else if (!playerMovement.isDashing)
+        else if (!playerMovement.isDashing) // Gravity normally
         {
             velocity.y -= gravity * Time.fixedDeltaTime;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
