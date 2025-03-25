@@ -59,20 +59,24 @@ public class CameraTarget : MonoBehaviour
 
             if (playerInputs.aimMode == AimMode.Stick || playerInputs.aimMode == AimMode.Move) // Camera behavior when movement/stick aiming
             {
-                if(playerInputs.movingRight && !playerInputs.movingLeft)
+                if(!playerChecks.IsTouchingWallRight() && !playerChecks.IsTouchingWallLeft())
                 {
-                    targetPosition = new Vector3(targetPositionX, targetPositionY, 0);
+                    if(playerInputs.movingRight && !playerInputs.movingLeft)
+                    {
+                        targetPosition.x = targetPositionX;
+                    }
+                    else if(playerInputs.movingLeft && !playerInputs.movingRight)
+                    {
+                        targetPosition.x = -targetPositionX;
+                    }
+                    else
+                    {
+                        targetPosition.x = playerChecks.isFacingRight
+                            ? targetPositionX
+                            : -targetPositionX;
+                    }
                 }
-                else if(playerInputs.movingLeft && !playerInputs.movingRight)
-                {
-                    targetPosition = new Vector3(-targetPositionX, targetPositionY, 0);
-                }
-                else
-                {
-                    targetPosition = playerChecks.isFacingRight
-                        ? new Vector3(targetPositionX, targetPositionY, 0)
-                        : new Vector3(-targetPositionX, targetPositionY, 0);
-                }
+                targetPosition.y = targetPositionY;
 
                 Vector3 newPosition = transform.localPosition;
 
