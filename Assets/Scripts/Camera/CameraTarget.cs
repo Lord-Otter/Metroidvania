@@ -88,19 +88,20 @@ public class CameraTarget : MonoBehaviour
                 targetPosition = new Vector3(playerInputs.mousePosition.x, playerInputs.mousePosition.y, 0);
                 targetPosition.x = playerInputs.mousePosition.x;
 
-                Vector3 newPosition = transform.localPosition;
+                Vector3 newPosition = transform.localPosition;                
 
-                newPosition.x = targetPosition.x * mouseCamMultiplier;
-
+                float targetX = targetPosition.x * mouseCamMultiplier;
                 float targetY = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
                 
-                if (playerVelocity.velocity.y <= -20)
+                
+                if (playerVelocity.velocity.y <= -15)
                 {
                     targetY += yMovementOffset * playerVelocity.velocity.y * 0.1f;
                 }
 
-                float smoothTime = 0.5f;
-                newPosition.y = Mathf.Lerp(newPosition.y, targetY, Time.deltaTime / smoothTime);
+                float smoothTime = 1f;
+                newPosition.x = Mathf.Lerp(newPosition.x, targetX, Time.fixedDeltaTime / smoothTime); // targetPosition.x * mouseCamMultiplier;
+                newPosition.y = Mathf.Lerp(newPosition.y, targetY, Time.fixedDeltaTime / smoothTime);
 
                 newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
                 newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);           
