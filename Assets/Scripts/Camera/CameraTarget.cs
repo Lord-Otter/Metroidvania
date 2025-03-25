@@ -25,8 +25,6 @@ public class CameraTarget : MonoBehaviour
     public float yMovementOffset = 2f;
     public float yOffsetThreshold = 4;
     private Vector3 targetPosition;
-    private float baseSpeedY = 2f;
-    private float minSpeedY = 0.5f;
 
 
     private void Awake()
@@ -57,13 +55,17 @@ public class CameraTarget : MonoBehaviour
     {
         if(!playerMovement.isTeleporting)
         {
-            if (playerInputs.aimMode == AimMode.Stick || playerInputs.aimMode == AimMode.Move)
+            float smoothTime = 1f;
+
+            if (playerInputs.aimMode == AimMode.Stick || playerInputs.aimMode == AimMode.Move) // Camera behavior when movement/stick aiming
             {
-                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold)
+                if(playerInputs.movingRight && !playerInputs.movingLeft)
                 {
-                    targetPosition = playerChecks.isFacingRight
-                        ? new Vector3(targetPositionX, targetPositionY + -yMovementOffset * Mathf.Abs(playerVelocity.velocity.y) * 0.1f, 0)
-                        : new Vector3(-targetPositionX, targetPositionY + -yMovementOffset * Mathf.Abs(playerVelocity.velocity.y) * 0.1f, 0);
+                    targetPosition = new Vector3(targetPositionX, targetPositionY, 0);
+                }
+                else if(playerInputs.movingLeft && !playerInputs.movingRight)
+                {
+                    targetPosition = new Vector3(-targetPositionX, targetPositionY, 0);
                 }
                 else
                 {
@@ -74,16 +76,20 @@ public class CameraTarget : MonoBehaviour
 
                 Vector3 newPosition = transform.localPosition;
 
-                float distanceY = Mathf.Abs(targetPosition.y - transform.localPosition.y);
+                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold)
+                {
+                    targetPosition.y += yMovementOffset * playerVelocity.velocity.y * 0.1f;
+                }
 
-                float adjustedSpeedY = Mathf.Max(baseSpeedY * distanceY, minSpeedY); 
+                newPosition.x = Mathf.Lerp(newPosition.x, targetPosition.x, Time.fixedDeltaTime / smoothTime);
+                newPosition.y = Mathf.Lerp(newPosition.y, targetPosition.y, Time.fixedDeltaTime / smoothTime);
 
-                newPosition.x = Mathf.MoveTowards(transform.localPosition.x, targetPosition.x, Time.fixedDeltaTime * speedX);
-                newPosition.y = Mathf.MoveTowards(transform.localPosition.y, targetPosition.y, Time.fixedDeltaTime * adjustedSpeedY);
+                newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
+                newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);
 
                 transform.localPosition = newPosition;
             }
-            else if (playerInputs.aimMode == AimMode.Mouse)
+            else if (playerInputs.aimMode == AimMode.Mouse) // Camera behavior when mouse aiming
             {
                 targetPosition = new Vector3(playerInputs.mousePosition.x, playerInputs.mousePosition.y, 0);
                 targetPosition.x = playerInputs.mousePosition.x;
@@ -94,13 +100,13 @@ public class CameraTarget : MonoBehaviour
                 float targetY = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
                 
                 
-                if (playerVelocity.velocity.y <= -15)
+                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold)
                 {
                     targetY += yMovementOffset * playerVelocity.velocity.y * 0.1f;
                 }
 
-                float smoothTime = 1f;
-                newPosition.x = Mathf.Lerp(newPosition.x, targetX, Time.fixedDeltaTime / smoothTime); // targetPosition.x * mouseCamMultiplier;
+                
+                newPosition.x = Mathf.Lerp(newPosition.x, targetX, Time.fixedDeltaTime / smoothTime);
                 newPosition.y = Mathf.Lerp(newPosition.y, targetY, Time.fixedDeltaTime / smoothTime);
 
                 newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
