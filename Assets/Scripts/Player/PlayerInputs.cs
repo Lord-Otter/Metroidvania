@@ -271,6 +271,5 @@ public class PlayerInputs : MonoBehaviour
             aimObject.rotation = Quaternion.Euler(0, 0, 180);
         }
     }
-
-#endregion
+    #endregion
 }

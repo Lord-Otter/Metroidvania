@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Android.Gradle;
 using Unity.VisualScripting;
 using UnityEngine;
 using static PlayerInputs;
@@ -24,6 +25,9 @@ public class CameraTarget : MonoBehaviour
     public float yMovementOffset = 2f;
     public float yOffsetThreshold = 4;
     private Vector3 targetPosition;
+    private float baseSpeedY = 2f;
+    private float minSpeedY = 0.5f;
+
 
     private void Awake()
     {
@@ -55,11 +59,11 @@ public class CameraTarget : MonoBehaviour
         {
             if (playerInputs.aimMode == AimMode.Stick || playerInputs.aimMode == AimMode.Move)
             {
-                if (playerVelocity.velocity.y > yOffsetThreshold || playerVelocity.velocity.y < -yOffsetThreshold)
+                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold)
                 {
                     targetPosition = playerChecks.isFacingRight
-                        ? new Vector3(targetPositionX, targetPositionY + -yMovementOffset, 0)
-                        : new Vector3(-targetPositionX, targetPositionY + -yMovementOffset, 0);
+                        ? new Vector3(targetPositionX, targetPositionY + -yMovementOffset * Mathf.Abs(playerVelocity.velocity.y) * 0.1f, 0)
+                        : new Vector3(-targetPositionX, targetPositionY + -yMovementOffset * Mathf.Abs(playerVelocity.velocity.y) * 0.1f, 0);
                 }
                 else
                 {
@@ -70,8 +74,12 @@ public class CameraTarget : MonoBehaviour
 
                 Vector3 newPosition = transform.localPosition;
 
-                newPosition.x = Mathf.MoveTowards(transform.localPosition.x, targetPosition.x, Time.fixedUnscaledDeltaTime * speedX);
-                newPosition.y = Mathf.MoveTowards(transform.localPosition.y, targetPosition.y, Time.fixedUnscaledDeltaTime * speedY);
+                float distanceY = Mathf.Abs(targetPosition.y - transform.localPosition.y);
+
+                float adjustedSpeedY = Mathf.Max(baseSpeedY * distanceY, minSpeedY); 
+
+                newPosition.x = Mathf.MoveTowards(transform.localPosition.x, targetPosition.x, Time.fixedDeltaTime * speedX);
+                newPosition.y = Mathf.MoveTowards(transform.localPosition.y, targetPosition.y, Time.fixedDeltaTime * adjustedSpeedY);
 
                 transform.localPosition = newPosition;
             }
@@ -81,15 +89,23 @@ public class CameraTarget : MonoBehaviour
                 targetPosition.x = playerInputs.mousePosition.x;
 
                 Vector3 newPosition = transform.localPosition;
-                    
+
                 newPosition.x = targetPosition.x * mouseCamMultiplier;
-                newPosition.y = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
+
+                float targetY = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
+                
+                if (playerVelocity.velocity.y <= -20)
+                {
+                    targetY += yMovementOffset * playerVelocity.velocity.y * 0.1f;
+                }
+
+                float smoothTime = 0.5f;
+                newPosition.y = Mathf.Lerp(newPosition.y, targetY, Time.deltaTime / smoothTime);
 
                 newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
                 newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);           
 
                 transform.localPosition = newPosition;
-                
             }
         }
         else

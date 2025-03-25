@@ -17,6 +17,7 @@ public class PlayerMovement : MonoBehaviour
     private CustomTimeSolution customTimeSolution;
     private CameraBehaviour cameraBehaviour;
     private CapsuleCollider[] capsuleColliders;
+    private Collider[] enemyColliders;
 
 
     [Header("Run")]
@@ -42,8 +43,9 @@ public class PlayerMovement : MonoBehaviour
     private bool dashCooldownReset;
     private bool dashGroundReset;
     private float dashStartTime;
-    private Vector3 dashStartPosition;
-    public bool isDashing = false;
+    private float dashDuration;
+    [HideInInspector]public bool isDashing = false;
+    private float timeWhenPaused;
     private float dashDirection;
     public bool canDash = true;
 
@@ -77,13 +79,15 @@ public class PlayerMovement : MonoBehaviour
         playerVelocity = GetComponent<PlayerVelocity>();
         playerTransform = GetComponent<Transform>();
         timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
-        customTimeSolution = GameObject.Find("Time_Manager").GetComponent<CustomTimeSolution>();
         cameraBehaviour = GameObject.Find("Main Camera").GetComponent<CameraBehaviour>();
         capsuleColliders = GetComponents<CapsuleCollider>();
 
         // Teleport
         teleportTarget = GameObject.Find("Teleport_Target");
         finalTeleportTarget = GameObject.Find("Final_Teleport_Target");
+
+        // Collider
+        enemyColliders = GameObject.Find("Training_Dummy").GetComponents<Collider>();
     }
 
     void Start()
@@ -107,6 +111,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if(timeManager.worldPause)
         {
+            OnPause();
             return;
         }
 
@@ -115,6 +120,7 @@ public class PlayerMovement : MonoBehaviour
 
         if(timeManager.tpPause)
         {
+            OnPause();
             return;
         }
 
@@ -187,6 +193,15 @@ public class PlayerMovement : MonoBehaviour
             playerInputs.jumping = false;
             canJump = false;
             isPogo = false;
+
+            if(playerChecks.AttachedToWallRight())
+            {
+                playerVelocity.velocity.x = -maxMoveSpeed * jumpForce * 0.1f;
+            }
+            else if(playerChecks.AttachedToWallLeft())
+            {
+                playerVelocity.velocity.x = maxMoveSpeed;
+            }
         }
         // Double Jump
         else if (playerInputs.airJumping)
@@ -198,7 +213,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Coyote Jump
-        if (playerChecks.IsGrounded() || playerChecks.AttachedToRWall() || playerChecks.AttachedToLWall())
+        if (playerChecks.IsGrounded() || playerChecks.AttachedToWallRight() || playerChecks.AttachedToWallLeft())
         {
             airTimeStart = Time.time;
             canJump = true;
@@ -256,11 +271,16 @@ public class PlayerMovement : MonoBehaviour
         if (playerInputs.dashing && canDash)
         {
             dashStartTime = Time.time;
-            dashStartPosition = transform.position;
             dashCooldownReset = false;
             dashGroundReset = false;
             canDash = false;
             isDashing = true;
+            dashDuration = dashRange / dashSpeed;
+            Physics.IgnoreCollision(capsuleColliders[0], enemyColliders[0], true); //Disable enemy collisions when dashing
+            Physics.IgnoreCollision(capsuleColliders[1], enemyColliders[0], true);
+            Physics.IgnoreCollision(capsuleColliders[1], enemyColliders[1], true);
+            Physics.IgnoreCollision(capsuleColliders[0], enemyColliders[1], true);
+
 
             if(!playerInputs.movingRight && !playerInputs.movingLeft)
             {
@@ -268,11 +288,11 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                if(playerChecks.AttachedToRWall() || (playerChecks.IsTouchingWallR() && !playerChecks.isFacingRight))
+                if(playerChecks.AttachedToWallRight() || (playerChecks.IsTouchingWallRight() && !playerChecks.isFacingRight))
                 {
                     dashDirection = -1f;
                 }
-                else if(playerChecks.AttachedToLWall())
+                else if(playerChecks.AttachedToWallLeft())
                 {
                     dashDirection = 1f;
                 }
@@ -283,28 +303,17 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        //KEEP WORKING ----------------------------------------------------------------------------
         if (isDashing)
         {
             playerVelocity.velocity.y = 0;
 
-            if(playerChecks.IsTouchingWallR() && playerChecks.isFacingRight) //<---------Fix this. It makes the player stick to walls when facing the other way and dashing into it
-            {
-                playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
-                StartCoroutine(DashCooldown());
-                isDashing = false;
-            }
-            else if(playerChecks.IsTouchingWallL() && !playerChecks.isFacingRight)
-            {
-                playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
-                StartCoroutine(DashCooldown());
-                isDashing = false;
-            }        
+            timeWhenPaused = Time.time;
 
-            if(Mathf.Abs(transform.position.x - dashStartPosition.x) >= dashRange)
+            if(Time.time - dashStartTime >= dashDuration)
             {
                 playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
                 StartCoroutine(DashCooldown());
+                //Activate Enemy Collisions
                 isDashing = false;
             }
             else
@@ -383,7 +392,13 @@ public class PlayerMovement : MonoBehaviour
 
 
 
-    #region Miscellaneous   
+    #region Miscellaneous
+    void OnPause()
+    {
+        // Dash
+        dashDuration += Time.deltaTime; // Extend dashDuration while the game is paused
+    }
+
     public void ResetMovementAbilities()
     {
         dashGroundReset = true;
