@@ -18,7 +18,7 @@ public class PlayerHealth : MonoBehaviour
     void Awake()
     {
         // Renderer
-        playerRenderer = GameObject.Find("Player_Visuals").GetComponent<Renderer>();
+        playerRenderer = GetComponentInChildren<Renderer>();
     }
 
     void Start()

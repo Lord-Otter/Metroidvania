@@ -42,13 +42,13 @@ public class CameraTarget : MonoBehaviour
 
     void Update()
     {
-        MoveTarget();
+        //MoveTarget();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        //MoveTarget();
+        MoveTarget();
     }
 
     void MoveTarget()
@@ -104,9 +104,9 @@ public class CameraTarget : MonoBehaviour
                 float targetY = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
                 
                 
-                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold)
+                if (Mathf.Abs(playerVelocity.velocity.y) >= yOffsetThreshold)
                 {
-                    targetY += yMovementOffset * playerVelocity.velocity.y * 0.1f;
+                    targetY += yMovementOffset * playerVelocity.velocity.y * 0.3f;
                 }
 
                 
