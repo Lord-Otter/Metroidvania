@@ -74,6 +74,11 @@ public class PlayerInputs : MonoBehaviour
         if(timeManager.worldPause)
         {
             return;
+        }        
+        
+        if (playerAttack.canAimAttack)
+        {
+            AimModeFunction();
         }
 
         if(timeManager.tpPause)
@@ -83,10 +88,7 @@ public class PlayerInputs : MonoBehaviour
 
         Controls();
 
-        if (playerAttack.canAimAttack) 
-        {
-            AimModeFunction();
-        }
+
     }
 
     #region Inputs

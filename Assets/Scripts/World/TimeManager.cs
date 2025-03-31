@@ -11,7 +11,10 @@ public class TimeManager : MonoBehaviour
 
     [Header("Time Scale")]
     public float timeScale = 1.0f;
+    public float customTimeScale = 1.0f;
     [HideInInspector]public float lastTimeScale;
+    [HideInInspector]public float lastCustomTimeScale;
+    [HideInInspector]public float scaledDeltaTime;
 
     private void Awake()
     {
@@ -19,16 +22,22 @@ public class TimeManager : MonoBehaviour
         playerVelocity = GameObject.Find("Player").GetComponent<PlayerVelocity>();
     }
 
+    private void Start()
+    {
+        
+    }
+
     // Update is called once per frame
     void Update()
     {
-        CustomPause();
-        TimeScale();       
+        CustomTimeScaler();
+        scaledDeltaTime = Time.fixedDeltaTime * customTimeScale;
+        //TimeScale();       
     }
 
-    void CustomPause()
+    void CustomTimeScaler()
     {
-        if(Input.GetKeyDown(KeyCode.P))
+        if(Input.GetKeyDown(KeyCode.Alpha1))
         {
             if(!worldPause)
             {
@@ -38,6 +47,24 @@ public class TimeManager : MonoBehaviour
             {
                 WorldPause(false);
             }
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            customTimeScale = 0.1f;
+            Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            customTimeScale = 0.5f;
+            Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            customTimeScale = 1;
+            Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
         }
     }
 

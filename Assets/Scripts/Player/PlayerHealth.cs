@@ -11,6 +11,7 @@ public class PlayerHealth : MonoBehaviour
     [Header("Take Damage")]
     public float damageDelay;
     private float lastTimeDamaged;
+    public bool canTakeDamage = true;
 
     [Header("Death")]
     private Renderer playerRenderer;
@@ -36,15 +37,18 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (Time.time - lastTimeDamaged >= damageDelay)
+        if(canTakeDamage)
         {
-            health -= damage;
-            lastTimeDamaged = Time.time;
-            Debug.Log("Damaged");
-
-            if (health <= 0)
+            if (Time.time - lastTimeDamaged >= damageDelay)
             {
-                playerRenderer.material.color = new Color(0.2f, 0.2f, 0.2f);
+                health -= damage;
+                lastTimeDamaged = Time.time;
+                Debug.Log("Damaged");
+
+                if (health <= 0)
+                {
+                    playerRenderer.material.color = new Color(0.2f, 0.2f, 0.2f);
+                }
             }
         }
     }

@@ -78,7 +78,7 @@ MonoBehaviour:
   transform: {fileID: 0}
   speed: 5
   speedMultiplier: 1
-  despawnTimer: 10
+  despawnTimer: 30
   isCritical: 0
   angleDifference: 0
 --- !u!212 &7327301035300383443

@@ -116,7 +116,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Teleport
-        Teleporting();
+        TeleportingStart();
 
         if(timeManager.tpPause)
         {
@@ -164,14 +164,14 @@ public class PlayerMovement : MonoBehaviour
         {
             if ((playerInputs.movingLeft || playerInputs.movingRight) && canRun)
             {
-                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, targetSpeed, acceleration * Time.fixedDeltaTime);
+                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, targetSpeed * timeManager.customTimeScale, acceleration * Time.fixedDeltaTime * timeManager.customTimeScale);
             }
             // Drag 
             else if ((!playerInputs.movingRight && !playerInputs.movingLeft) || (playerInputs.movingRight && playerInputs.movingLeft))
             {
-                float drag = playerChecks.IsGrounded() ? horizontalGroundDrag : !playerChecks.IsGrounded() && (!playerInputs.movingLeft || !playerInputs.movingRight) ? horizontalAirDrag : 0;
+                float drag = playerChecks.IsGrounded() ? horizontalGroundDrag  * timeManager.customTimeScale : !playerChecks.IsGrounded() && (!playerInputs.movingLeft || !playerInputs.movingRight) ? horizontalAirDrag * timeManager.customTimeScale : 0;
 
-                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, 0, drag * Time.fixedDeltaTime);
+                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, 0, drag * Time.fixedDeltaTime * timeManager.customTimeScale);
             }
         }
 
@@ -189,25 +189,25 @@ public class PlayerMovement : MonoBehaviour
         // Jumping
         if (playerInputs.jumping)
         {
-            playerVelocity.velocity.y = jumpForce;
+            playerVelocity.velocity.y = jumpForce * timeManager.customTimeScale;
             playerInputs.jumping = false;
             canJump = false;
             isPogo = false;
 
             if(playerChecks.AttachedToWallRight())
             {
-                playerVelocity.velocity.x = -maxMoveSpeed * jumpForce * 0.1f;
+                playerVelocity.velocity.x = -maxMoveSpeed * jumpForce * 0.1f * timeManager.customTimeScale;
             }
             else if(playerChecks.AttachedToWallLeft())
             {
-                playerVelocity.velocity.x = maxMoveSpeed;
+                playerVelocity.velocity.x = maxMoveSpeed * timeManager.customTimeScale;
             }
         }
         // Double Jump
         else if (playerInputs.airJumping)
         {
             airJumps--;
-            playerVelocity.velocity.y = airJumpForce;
+            playerVelocity.velocity.y = airJumpForce * timeManager.customTimeScale;
             playerInputs.airJumping = false;
             isPogo = false;
         }
@@ -226,11 +226,11 @@ public class PlayerMovement : MonoBehaviour
         // Jump Canceling
         if (!playerInputs.highJumping && playerVelocity.velocity.y > -1)
         {
-            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime);
+            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime * timeManager.customTimeScale);
         }
         else if(isPogo)
         {
-            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime);
+            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime * timeManager.customTimeScale);
         }
 
         if(playerVelocity.velocity.y < 0 && isPogo)
@@ -276,10 +276,8 @@ public class PlayerMovement : MonoBehaviour
             canDash = false;
             isDashing = true;
             dashDuration = dashRange / dashSpeed;
-            Physics.IgnoreCollision(capsuleColliders[0], enemyColliders[0], true); //Disable enemy collisions when dashing
-            Physics.IgnoreCollision(capsuleColliders[1], enemyColliders[0], true);
-            Physics.IgnoreCollision(capsuleColliders[1], enemyColliders[1], true);
-            Physics.IgnoreCollision(capsuleColliders[0], enemyColliders[1], true);
+            capsuleColliders[0].excludeLayers = LayerMask.GetMask("Enemy");
+            capsuleColliders[1].excludeLayers = LayerMask.GetMask("Enemy");
 
 
             if(!playerInputs.movingRight && !playerInputs.movingLeft)
@@ -313,7 +311,8 @@ public class PlayerMovement : MonoBehaviour
             {
                 playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
                 StartCoroutine(DashCooldown());
-                //Activate Enemy Collisions
+                capsuleColliders[0].excludeLayers &= ~LayerMask.GetMask("Enemy");
+                capsuleColliders[1].excludeLayers &= ~LayerMask.GetMask("Enemy");
                 isDashing = false;
             }
             else
@@ -336,7 +335,7 @@ public class PlayerMovement : MonoBehaviour
 
 
     #region Teleport
-    void Teleporting()
+    void TeleportingStart()
     {
         playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
 
@@ -359,7 +358,7 @@ public class PlayerMovement : MonoBehaviour
 
         if(isTeleporting && Time.time - tpStartTime > tpStartDelay)
         {
-            Vector3 targetPos = teleportTarget.transform.position;
+            Vector3 targetPos = finalTeleportTarget.transform.position;
             Vector3 direction = (targetPos - transform.position).normalized;
             float distance = Vector3.Distance(transform.position, targetPos);
 
@@ -373,17 +372,52 @@ public class PlayerMovement : MonoBehaviour
                 canTP = true;
 
                 capsuleColliders[0].enabled = true;
-                capsuleColliders[1].enabled = true;
+                capsuleColliders[1].enabled = true;                
 
                 timeManager.TPPause(false);
 
                 currentTPSpeed = 0f;
+                
+                //TeleportingEnd();
             }
             else
             {
                 // Continue moving toward the target
                 transform.position += direction * currentTPSpeed * Time.fixedDeltaTime;
             }
+        }
+
+        playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
+    }
+
+    void TeleportingEnd()
+    {
+        playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
+
+        Vector3 targetPos = finalTeleportTarget.transform.position;
+        Vector3 direction = (targetPos - transform.position).normalized;
+        float distance = Vector3.Distance(transform.position, targetPos);
+
+        currentTPSpeed = Mathf.Min(currentTPSpeed + tpAcceleration * Time.fixedDeltaTime, tpMaxSpeed);
+
+        if (distance < currentTPSpeed * Time.fixedDeltaTime)
+        {
+            transform.position = targetPos;
+
+            isTeleporting = false;
+            canTP = true;
+
+            //capsuleColliders[0].enabled = true;
+            //capsuleColliders[1].enabled = true;
+
+            timeManager.TPPause(false);
+
+            currentTPSpeed = 0f;
+        }
+        else
+        {
+            // Continue moving toward the target
+            transform.position += direction * currentTPSpeed * Time.fixedDeltaTime;
         }
 
         playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;

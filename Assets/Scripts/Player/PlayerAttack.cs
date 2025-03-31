@@ -85,6 +85,11 @@ public class PlayerAttack : MonoBehaviour
         if(timeManager.worldPause)
         {
             return;
+        }        
+        
+        if (canAimAttack) // Makes sure the player can't redirect their attack while it's happening
+        {
+            RotateAttackTrigger();
         }
 
         if(timeManager.tpPause)
@@ -92,10 +97,7 @@ public class PlayerAttack : MonoBehaviour
             return;
         }
 
-        if (canAimAttack) // Makes sure the player can't redirect their attack while it's happening
-        {
-            RotateAttackTrigger();
-        }
+
         AttackFunction();
     }
 
@@ -149,7 +151,7 @@ public class PlayerAttack : MonoBehaviour
     private void OnTriggerEnter(Collider target)
     {
         if (((1 << target.gameObject.layer) & attackableLayers.value) != 0)
-        {            
+        {
             if (attackTrigger.enabled && !hitTargets.Contains(target.gameObject))
             {
                 hitTargets.Add(target.gameObject);

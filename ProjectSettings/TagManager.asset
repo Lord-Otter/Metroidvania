@@ -16,11 +16,11 @@ TagManager:
   - 
   - Water
   - UI
-  - Attackable
+  - Projectile Hostile
   - Floor
   - Wall
-  - 
-  - 
+  - Enemy
+  - Projectile Friendly
   - 
   - 
   - 
