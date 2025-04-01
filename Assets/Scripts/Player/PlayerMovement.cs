@@ -40,10 +40,10 @@ public class PlayerMovement : MonoBehaviour
     public float dashSpeed;
     public float dashRange;
     public float dashCooldown;
+    private Vector3 dashStartPosition;
     private bool dashCooldownReset;
     private bool dashGroundReset;
-    private float dashStartTime;
-    private float dashDuration;
+    private float dashStartTime;    
     [HideInInspector]public bool isDashing = false;
     private float timeWhenPaused;
     private float dashDirection;
@@ -155,8 +155,8 @@ public class PlayerMovement : MonoBehaviour
             : (playerInputs.movingRight ? maxMoveSpeed * horizontalSpeed * timeManager.customTimeScale 
             : (playerInputs.movingLeft ? -maxMoveSpeed * -horizontalSpeed * timeManager.customTimeScale
             : 0));
-        float acceleration = playerChecks.IsGrounded() ? moveAcceleration 
-            : airAcceleration;
+        float acceleration = playerChecks.IsGrounded() ? moveAcceleration * timeManager.customTimeScale 
+            : airAcceleration * timeManager.customTimeScale;
 
         if (!isDashing)
         {
@@ -270,12 +270,11 @@ public class PlayerMovement : MonoBehaviour
 
         if (playerInputs.dashing && canDash)
         {
-            dashStartTime = Time.time;
+            dashStartPosition = playerTransform.position;
             dashCooldownReset = false;
             dashGroundReset = false;
             canDash = false;
             isDashing = true;
-            dashDuration = dashRange / (dashSpeed * timeManager.customTimeScale);
             capsuleColliders[0].excludeLayers = LayerMask.GetMask("Enemy");
             capsuleColliders[1].excludeLayers = LayerMask.GetMask("Enemy");
 
@@ -305,14 +304,15 @@ public class PlayerMovement : MonoBehaviour
         {
             playerVelocity.velocity.y = 0;
 
-            timeWhenPaused = Time.time;
+            float distanceTraveled = Mathf.Abs(playerTransform.position.x - dashStartPosition.x);
 
-            if(Time.time - dashStartTime >= dashDuration)
+            if((distanceTraveled >= dashRange) || (dashDirection > 0 && playerChecks.IsTouchingWallRight()) || (dashDirection < 0 && playerChecks.IsTouchingWallLeft()))
             {
                 playerVelocity.velocity.x = dashDirection * maxMoveSpeed * timeManager.customTimeScale;
                 StartCoroutine(DashCooldown());
                 capsuleColliders[0].excludeLayers &= ~LayerMask.GetMask("Enemy");
                 capsuleColliders[1].excludeLayers &= ~LayerMask.GetMask("Enemy");
+                dashStartPosition = Vector3.zero;
                 isDashing = false;
             }
             else
@@ -432,7 +432,7 @@ public class PlayerMovement : MonoBehaviour
     void OnPause()
     {
         // Dash
-        dashDuration += Time.deltaTime; // Extend dashDuration while the game is paused
+        //dashDuration += Time.deltaTime; // Extend dashDuration while the game is paused
     }
 
     public void ResetMovementAbilities()

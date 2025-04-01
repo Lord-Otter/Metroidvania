@@ -139,7 +139,7 @@ public class PlayerAttack : MonoBehaviour
             }
             else
             {
-                AttackEnablingPhase();                
+                AttackEnablingPhase();
             }
         }
     }

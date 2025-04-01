@@ -5331,7 +5331,7 @@ GameObject:
   - component: {fileID: 174703950}
   - component: {fileID: 174703949}
   - component: {fileID: 174703948}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Turret (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6446,7 +6446,7 @@ GameObject:
   - component: {fileID: 496226926}
   - component: {fileID: 496226925}
   - component: {fileID: 496226924}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Turret (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7024,7 +7024,7 @@ GameObject:
   - component: {fileID: 854288256}
   - component: {fileID: 854288255}
   - component: {fileID: 854288254}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Turret (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8061,9 +8061,6 @@ MonoBehaviour:
   isPogo: 0
   horizontalGroundDrag: 100
   horizontalAirDrag: 20
-  start: 20
-  end: 40
-  currentProgress: 22
 --- !u!114 &1145036903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8171,7 +8168,7 @@ GameObject:
   - component: {fileID: 1174759064}
   - component: {fileID: 1174759063}
   - component: {fileID: 1174759062}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Turret
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8766,7 +8763,7 @@ GameObject:
   - component: {fileID: 1371197995}
   - component: {fileID: 1371197994}
   - component: {fileID: 1371197993}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Turret (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8939,7 +8936,7 @@ GameObject:
   - component: {fileID: 1411574021}
   - component: {fileID: 1411574020}
   - component: {fileID: 1411574019}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Turret (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
