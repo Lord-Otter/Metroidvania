@@ -10,6 +10,7 @@ public class ProjectileVelocity : MonoBehaviour
 
     [HideInInspector] public Rigidbody rigidBody;
     [HideInInspector] public Vector3 velocity;
+    [HideInInspector]public Vector3 unscaledVelocity;
     [HideInInspector] public new Transform transform;
 
     public float speed;
@@ -33,6 +34,8 @@ public class ProjectileVelocity : MonoBehaviour
 
     void Start()
     {
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
+
         Destroy(gameObject, despawnTimer);
     }
 
@@ -69,17 +72,23 @@ public class ProjectileVelocity : MonoBehaviour
 
     void Traveling()
     {
-        velocity = rigidBody.linearVelocity;
+        velocity = rigidBody.linearVelocity / timeManager.customTimeScale;
 
         velocity = transform.right * speed;
 
-        rigidBody.linearVelocity = velocity;
+        unscaledVelocity = velocity;
+        rigidBody.linearVelocity = unscaledVelocity * timeManager.customTimeScale;
     }
 
     public void ChangeTrajectory(float angle, float angleDiff)
     {
         transform.rotation = Quaternion.Euler(0, 0, angle);
         angleDifference = angleDiff;
+    }
+
+    public void AdjustVelocityForTimeScale()
+    {
+        //rigidBody.linearVelocity = unscaledVelocity * timeManager.customTimeScale;
     }
 
     void OnPause()

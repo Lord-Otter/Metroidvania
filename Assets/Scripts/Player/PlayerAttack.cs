@@ -17,10 +17,12 @@ public class PlayerAttack : MonoBehaviour
     public int attackDamage;
     public float attackBuildUpTime;
     public float damageDuration;
-    public float attackResetTime;
+    public float attackCooldown;
     public float enemyKnockBack;
     public float playerKnockBack;
     public bool canAttack = true;
+    private bool isAttacking = false;
+    private float attackStartTime;
     [HideInInspector]public bool canAimAttack = true;
     [SerializeField] private LayerMask attackableLayers;
     public List<GameObject> hitTargets = new List<GameObject>();
@@ -51,6 +53,7 @@ public class PlayerAttack : MonoBehaviour
     [Header("Testing")]
     private Renderer aimStickRenderer;
     public GameObject swoosh; // Temporary sheisse
+    private bool canSpawnSwoosh;
     private float[] angles = {  0, 22.5f, 45, 67.5f, 90, 112.5f, 135, 157.5f, 180, 
                             202.5f, 225,    // Down left
                             270,            // Down down
@@ -103,7 +106,7 @@ public class PlayerAttack : MonoBehaviour
 
     void FixedUpdate()
     {
-
+        AttackSequence();
     }
 
     #region Attacking
@@ -111,8 +114,78 @@ public class PlayerAttack : MonoBehaviour
     {
         if (playerInputs.attacking && canAttack)
         {
-            StartCoroutine(PerformAttack());
+            //StartCoroutine(PerformAttack());
+            attackStartTime = Time.time;
+            isAttacking = true;
+            canAttack = false;     
+        }        
+    }
+
+    void AttackSequence()
+    {
+        if(isAttacking)
+        {
+            if(Time.time - attackStartTime < attackBuildUpTime / timeManager.customTimeScale)
+            {
+                AttackBuildUpPhase();
+            }
+            else if(Time.time - attackStartTime < (damageDuration + attackBuildUpTime) / timeManager.customTimeScale)
+            {
+                AttackDamagePhase();
+            }
+            else if(Time.time - attackStartTime < (attackCooldown + damageDuration + attackBuildUpTime) / timeManager.customTimeScale)
+            {
+                AttackCooldownPhase();
+            }
+            else
+            {
+                AttackEnablingPhase();                
+            }
         }
+    }
+
+    void AttackBuildUpPhase()
+    {        
+        // Attack is building up
+        aimStickRenderer.material.color = new Color(1, 1, 0); // Makes attack stick yellow for visual aid in testing
+        hitTargets.Clear();
+
+        // Projectile stuffs
+        deflectedProjectiles.Clear();
+        critProjectiles.Clear();
+        tpProjectile.Clear();
+        
+        //Code to initiate attack animation
+
+        canSpawnSwoosh = true; // Temporary Sheisse
+    }
+
+    void AttackDamagePhase()
+    {
+        // Attack is now able to damage
+        aimStickRenderer.material.color = new Color(0, 1, 0); // Makes attack stick green for visual aid in testing
+        if(canSpawnSwoosh)
+        {
+            Instantiate(swoosh, attackTrigger.transform); // Temporary swoosh sprite
+        }
+        canSpawnSwoosh = false; // Temporary Sheisse
+        canAimAttack = false;
+        attackTrigger.enabled = true;
+    }
+
+    void AttackCooldownPhase()
+    {
+        // Attack can no longer damage
+        aimStickRenderer.material.color = new Color(1, 0, 0); // Makes attack stick red for visual aid in testing
+        canAimAttack = true;
+        attackTrigger.enabled = false;
+    }
+    
+    void AttackEnablingPhase()
+    {
+        aimStickRenderer.material.color = new Color(1, 1, 1); // Makes attack stick white for visual aid in testing
+        canAttack = true;
+        isAttacking = false;
     }
 
     IEnumerator PerformAttack()
@@ -128,20 +201,20 @@ public class PlayerAttack : MonoBehaviour
 
         canAttack = false;
         //Code to initiate attack animation
-        yield return new WaitForSeconds(attackBuildUpTime); // Time before attack deals damage
+        yield return new WaitForSeconds(attackBuildUpTime / timeManager.customTimeScale); // Time before attack deals damage
 
         // Attack is now able to damage
         aimStickRenderer.material.color = new Color(0, 1, 0); // Makes attack stick green for visual aid in testing
         Instantiate(swoosh, attackTrigger.transform); // Temporary swoosh sprite
         canAimAttack = false;
         attackTrigger.enabled = true;
-        yield return new WaitForSeconds(damageDuration); // Time before attack no longer deals damage
+        yield return new WaitForSeconds(damageDuration / timeManager.customTimeScale); // Time before attack no longer deals damage
 
         // Attack can no longer damage
         aimStickRenderer.material.color = new Color(1, 0, 0); // Makes attack stick red for visual aid in testing
         canAimAttack = true;
         attackTrigger.enabled = false;
-        yield return new WaitForSeconds(attackResetTime); // Time before player can attack again
+        yield return new WaitForSeconds(attackCooldown / timeManager.customTimeScale); // Time before player can attack again
 
         // New attack can now be started
         aimStickRenderer.material.color = new Color(1, 1, 1); // Makes attack stick white for visual aid in testing

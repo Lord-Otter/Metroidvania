@@ -131,9 +131,7 @@ public class PlayerMovement : MonoBehaviour
         Jumping();
 
         // Dash
-        Dashing();
-
-        
+        Dashing();    
     }
 
     #region Run
@@ -154,8 +152,8 @@ public class PlayerMovement : MonoBehaviour
         }
 
         float targetSpeed = (playerInputs.movingRight && playerInputs.movingLeft) ? 0 
-            : (playerInputs.movingRight ? maxMoveSpeed * horizontalSpeed 
-            : (playerInputs.movingLeft ? -maxMoveSpeed * -horizontalSpeed 
+            : (playerInputs.movingRight ? maxMoveSpeed * horizontalSpeed * timeManager.customTimeScale 
+            : (playerInputs.movingLeft ? -maxMoveSpeed * -horizontalSpeed * timeManager.customTimeScale
             : 0));
         float acceleration = playerChecks.IsGrounded() ? moveAcceleration 
             : airAcceleration;
@@ -164,12 +162,14 @@ public class PlayerMovement : MonoBehaviour
         {
             if ((playerInputs.movingLeft || playerInputs.movingRight) && canRun)
             {
-                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, targetSpeed * timeManager.customTimeScale, acceleration * Time.fixedDeltaTime * timeManager.customTimeScale);
+                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, targetSpeed , acceleration * Time.fixedDeltaTime * timeManager.customTimeScale);
             }
             // Drag 
             else if ((!playerInputs.movingRight && !playerInputs.movingLeft) || (playerInputs.movingRight && playerInputs.movingLeft))
             {
-                float drag = playerChecks.IsGrounded() ? horizontalGroundDrag  * timeManager.customTimeScale : !playerChecks.IsGrounded() && (!playerInputs.movingLeft || !playerInputs.movingRight) ? horizontalAirDrag * timeManager.customTimeScale : 0;
+                float drag = playerChecks.IsGrounded() ? horizontalGroundDrag * timeManager.customTimeScale 
+                : !playerChecks.IsGrounded() && (!playerInputs.movingLeft || !playerInputs.movingRight) ? horizontalAirDrag * timeManager.customTimeScale 
+                : 0;
 
                 playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, 0, drag * Time.fixedDeltaTime * timeManager.customTimeScale);
             }
@@ -200,7 +200,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else if(playerChecks.AttachedToWallLeft())
             {
-                playerVelocity.velocity.x = maxMoveSpeed * timeManager.customTimeScale;
+                playerVelocity.velocity.x = maxMoveSpeed * jumpForce * 0.1f;
             }
         }
         // Double Jump
@@ -224,9 +224,9 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Jump Canceling
-        if (!playerInputs.highJumping && playerVelocity.velocity.y > -1)
+        if (!playerInputs.highJumping && playerVelocity.velocity.y > -1 * timeManager.customTimeScale)
         {
-            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime * timeManager.customTimeScale);
+            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime * Mathf.Pow(timeManager.customTimeScale, 2));
         }
         else if(isPogo)
         {
@@ -248,7 +248,7 @@ public class PlayerMovement : MonoBehaviour
         playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
 
         playerVelocity.velocity.y = 0;
-        playerVelocity.velocity.y = pogoForce;
+        playerVelocity.velocity.y = pogoForce * timeManager.customTimeScale;
 
         ResetMovementAbilities();
 
@@ -275,7 +275,7 @@ public class PlayerMovement : MonoBehaviour
             dashGroundReset = false;
             canDash = false;
             isDashing = true;
-            dashDuration = dashRange / dashSpeed;
+            dashDuration = dashRange / (dashSpeed * timeManager.customTimeScale);
             capsuleColliders[0].excludeLayers = LayerMask.GetMask("Enemy");
             capsuleColliders[1].excludeLayers = LayerMask.GetMask("Enemy");
 
@@ -309,7 +309,7 @@ public class PlayerMovement : MonoBehaviour
 
             if(Time.time - dashStartTime >= dashDuration)
             {
-                playerVelocity.velocity.x = dashDirection * maxMoveSpeed;
+                playerVelocity.velocity.x = dashDirection * maxMoveSpeed * timeManager.customTimeScale;
                 StartCoroutine(DashCooldown());
                 capsuleColliders[0].excludeLayers &= ~LayerMask.GetMask("Enemy");
                 capsuleColliders[1].excludeLayers &= ~LayerMask.GetMask("Enemy");
@@ -317,7 +317,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                playerVelocity.velocity.x = dashDirection * dashSpeed;
+                playerVelocity.velocity.x = dashDirection * dashSpeed * timeManager.customTimeScale;
             }
         }
 
@@ -377,13 +377,15 @@ public class PlayerMovement : MonoBehaviour
                 timeManager.TPPause(false);
 
                 currentTPSpeed = 0f;
+
+                timeManager.customTimeScale = 0.01f;
                 
                 //TeleportingEnd();
             }
             else
             {
                 // Continue moving toward the target
-                transform.position += direction * currentTPSpeed * Time.fixedDeltaTime;
+                transform.position += direction * currentTPSpeed * Time.fixedDeltaTime * timeManager.customTimeScale;
             }
         }
 

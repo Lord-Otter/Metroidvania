@@ -12,6 +12,7 @@ public class PlayerVelocity : MonoBehaviour
 
     [HideInInspector] public Rigidbody rigidBody;
     [HideInInspector] public Vector3 velocity;
+    [HideInInspector]public Vector3 unscaledVelocity;
 
     [Header("Physics")]
     public float gravity = 17.5f;
@@ -53,31 +54,36 @@ public class PlayerVelocity : MonoBehaviour
             OnPause();
             return;
         }
-
         Physics();
     }
 
     public void Physics()
     {
-        velocity = rigidBody.linearVelocity;
+        velocity = rigidBody.linearVelocity / timeManager.customTimeScale;
 
-        if((playerChecks.AttachedToWallRight() || playerChecks.AttachedToWallLeft()) && velocity.y < 0)  // Gravity while wall sliding
+        if((playerChecks.AttachedToWallRight() || playerChecks.AttachedToWallLeft()) && velocity.y < 0)  
         {
-            velocity.y -= wallSlideGravity * Time.fixedDeltaTime;
+            velocity.y -= wallSlideGravity * Time.fixedDeltaTime * timeManager.customTimeScale;
             velocity.y = Mathf.Max(velocity.y, -wallSlideMaxSpeed);
         }
-        else if (!playerMovement.isDashing &&  playerInputs.highJumping && velocity.y > 0) // Gravity while jumping
+        else if (!playerMovement.isDashing && playerInputs.highJumping && velocity.y > 0) 
         {
-            velocity.y -= jumpGravity * Time.fixedDeltaTime;
+            velocity.y -= jumpGravity * Time.fixedDeltaTime * timeManager.customTimeScale;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
-        else if (!playerMovement.isDashing) // Gravity normally
+        else if (!playerMovement.isDashing) 
         {
-            velocity.y -= gravity * Time.fixedDeltaTime;
+            velocity.y -= gravity * Time.fixedDeltaTime * timeManager.customTimeScale;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
 
-        rigidBody.linearVelocity = velocity;
+        unscaledVelocity = velocity; // Store unscaled velocity
+        rigidBody.linearVelocity = unscaledVelocity * timeManager.customTimeScale; // Apply scaling
+    }
+
+    public void AdjustVelocityForTimeScale()
+    {
+        rigidBody.linearVelocity = unscaledVelocity * timeManager.customTimeScale;
     }
 
     void OnPause()

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using Unity.Android.Gradle;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class CameraTarget : MonoBehaviour
     private PlayerInputs playerInputs;
     private PlayerVelocity playerVelocity;
     private PlayerMovement playerMovement;
+    private TimeManager timeManager;
 
     [Header("Mouse Camera Behaviour")]
     public float mouseCamMultiplier = 0.1f;
@@ -33,16 +35,12 @@ public class CameraTarget : MonoBehaviour
         playerInputs = GetComponentInParent<PlayerInputs>();
         playerVelocity = GetComponentInParent<PlayerVelocity>();
         playerMovement = GetComponentInParent<PlayerMovement>();
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
     }
 
     void Start()
     {
 
-    }
-
-    void Update()
-    {
-        //MoveTarget();
     }
 
     // Update is called once per frame
@@ -80,13 +78,13 @@ public class CameraTarget : MonoBehaviour
 
                 Vector3 newPosition = transform.localPosition;
 
-                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold)
+                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold * timeManager.customTimeScale)
                 {
                     targetPosition.y += yMovementOffset * playerVelocity.velocity.y * 0.1f;
                 }
 
-                newPosition.x = Mathf.Lerp(newPosition.x, targetPosition.x, Time.fixedDeltaTime / smoothTime);
-                newPosition.y = Mathf.Lerp(newPosition.y, targetPosition.y, Time.fixedDeltaTime / smoothTime);
+                newPosition.x = Mathf.Lerp(newPosition.x, targetPosition.x, Time.fixedDeltaTime / smoothTime * timeManager.customTimeScale);
+                newPosition.y = Mathf.Lerp(newPosition.y, targetPosition.y, Time.fixedDeltaTime / smoothTime * timeManager.customTimeScale);
 
                 newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
                 newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);
@@ -104,14 +102,14 @@ public class CameraTarget : MonoBehaviour
                 float targetY = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
                 
                 
-                if (Mathf.Abs(playerVelocity.velocity.y) >= yOffsetThreshold)
+                if (Mathf.Abs(playerVelocity.velocity.y * timeManager.customTimeScale) >= yOffsetThreshold * timeManager.customTimeScale)
                 {
                     targetY += yMovementOffset * playerVelocity.velocity.y * 0.3f;
                 }
 
                 
-                newPosition.x = Mathf.Lerp(newPosition.x, targetX, Time.fixedDeltaTime / smoothTime);
-                newPosition.y = Mathf.Lerp(newPosition.y, targetY, Time.fixedDeltaTime / smoothTime);
+                newPosition.x = Mathf.Lerp(newPosition.x, targetX, Time.fixedDeltaTime / smoothTime * timeManager.customTimeScale);
+                newPosition.y = Mathf.Lerp(newPosition.y, targetY, Time.fixedDeltaTime / smoothTime * timeManager.customTimeScale);
 
                 newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
                 newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);           

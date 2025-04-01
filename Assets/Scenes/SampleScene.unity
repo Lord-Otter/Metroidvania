@@ -7763,6 +7763,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1196e97906124e0428c742ceab028d49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraDistance: 15
+  CameraOffset: {x: 0, y: 0, z: 0}
+  lookAheadTime: 0.1
+  lookAheadSmoothing: 15
+  xDamping: 0.75
+  yDamping: 1
+  zDamping: 1
 --- !u!1 &1053469498
 GameObject:
   m_ObjectHideFlags: 0
@@ -7993,7 +8000,7 @@ MonoBehaviour:
   attackDamage: 3
   attackBuildUpTime: 0.1
   damageDuration: 0.2
-  attackResetTime: 0.3
+  attackCooldown: 0.2
   enemyKnockBack: 0
   playerKnockBack: 0
   canAttack: 1
@@ -8054,6 +8061,9 @@ MonoBehaviour:
   isPogo: 0
   horizontalGroundDrag: 100
   horizontalAirDrag: 20
+  start: 20
+  end: 40
+  currentProgress: 22
 --- !u!114 &1145036903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8121,6 +8131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rigidBody: {fileID: 0}
   velocity: {x: 0, y: 0, z: 0}
+  unscaledVelocity: {x: 0, y: 0, z: 0}
   gravity: 17.5
   jumpGravity: 15
   maxFallSpeed: 20
@@ -8528,9 +8539,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trainingProjectile: {fileID: 5536923785135866504, guid: 6966f3e5a88b3964493b880799fd752f, type: 3}
+  projectileVelocity: {fileID: 0}
+  playerVelocity: {fileID: 0}
+  cameraBehaviour: {fileID: 0}
   worldPause: 0
   tpPause: 0
   timeScale: 1
+  customTimeScale: 1
   lastTimeScale: 0
 --- !u!4 &1282595033
 Transform:

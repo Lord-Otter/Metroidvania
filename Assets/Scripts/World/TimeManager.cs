@@ -4,8 +4,9 @@ public class TimeManager : MonoBehaviour
 {
     [Header("Custom Time Pausing")]
     public GameObject trainingProjectile;
-    private ProjectileVelocity projectileVelocity;
-    private PlayerVelocity playerVelocity;
+    public ProjectileVelocity projectileVelocity;
+    public PlayerVelocity playerVelocity;
+    public CameraBehaviour cameraBehaviour;
     public bool worldPause = false;
     public bool tpPause = false;
 
@@ -13,25 +14,18 @@ public class TimeManager : MonoBehaviour
     public float timeScale = 1.0f;
     public float customTimeScale = 1.0f;
     [HideInInspector]public float lastTimeScale;
-    [HideInInspector]public float lastCustomTimeScale;
-    [HideInInspector]public float scaledDeltaTime;
 
     private void Awake()
     {
         projectileVelocity = trainingProjectile.GetComponent<ProjectileVelocity>();
         playerVelocity = GameObject.Find("Player").GetComponent<PlayerVelocity>();
-    }
-
-    private void Start()
-    {
-        
+        cameraBehaviour = GameObject.Find("Main Camera").GetComponent<CameraBehaviour>();
     }
 
     // Update is called once per frame
     void Update()
     {
         CustomTimeScaler();
-        scaledDeltaTime = Time.fixedDeltaTime * customTimeScale;
         //TimeScale();       
     }
 
@@ -52,18 +46,21 @@ public class TimeManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             customTimeScale = 0.1f;
+            TimeScaleChangeUpdate();
             Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             customTimeScale = 0.5f;
+            TimeScaleChangeUpdate();
             Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
             customTimeScale = 1;
+            TimeScaleChangeUpdate();
             Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
         }
     }
@@ -100,6 +97,13 @@ public class TimeManager : MonoBehaviour
             projectileVelocity.OnResume();
             playerVelocity.OnResume();
         }        
+    }
+
+    void TimeScaleChangeUpdate()
+    {
+        playerVelocity.AdjustVelocityForTimeScale();
+        projectileVelocity.AdjustVelocityForTimeScale();
+        cameraBehaviour.AdjustVelocityForTimeScale();
     }
 
     void TimeScale()
