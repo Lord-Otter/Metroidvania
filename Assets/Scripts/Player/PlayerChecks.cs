@@ -228,11 +228,11 @@ public class PlayerChecks : MonoBehaviour
     {
         float aimAngle = playerInputs.aimObject.rotation.eulerAngles.z;
 
-        if(AttachedToWallRight() && playerVelocity.velocity.y <= 0)
+        if(AttachedToWallRight())
         {
             isFacingRight = false;
         }
-        else if(AttachedToWallLeft() && playerVelocity.velocity.y <= 0)
+        else if(AttachedToWallLeft())
         {
             isFacingRight = true;
         }

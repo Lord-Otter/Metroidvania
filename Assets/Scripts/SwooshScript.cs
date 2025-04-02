@@ -5,6 +5,7 @@ using UnityEngine;
 public class SwooshScript : MonoBehaviour
 {
     private TimeManager timeManager;
+    private PlayerAttack playerAttack;
 
     public float destroyTime = 0.2f;
 
@@ -12,12 +13,16 @@ public class SwooshScript : MonoBehaviour
     void Start()
     {
         timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
-        Destroy(gameObject, destroyTime / timeManager.customTimeScale);
+        playerAttack = GameObject.Find("Player").GetComponent<PlayerAttack>();
+        //Destroy(gameObject, destroyTime / timeManager.customTimeScale);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if(playerAttack.attackI >= (playerAttack.damageDuration + playerAttack.attackBuildUpTime) * 100f)
+        {
+            Destroy(gameObject);
+        }
     }
 }

@@ -15,6 +15,10 @@ public class PlayerAttack : MonoBehaviour
 
     [Header("Player Attack")]
     public int attackDamage;
+    public float attackDuration;
+    private float speed; // Hmm
+    [HideInInspector] public float attackI; // Hmm
+    private float attackStartTime;
     public float attackBuildUpTime;
     public float damageDuration;
     public float attackCooldown;
@@ -22,7 +26,6 @@ public class PlayerAttack : MonoBehaviour
     public float playerKnockBack;
     public bool canAttack = true;
     private bool isAttacking = false;
-    private float attackStartTime;
     [HideInInspector]public bool canAimAttack = true;
     [SerializeField] private LayerMask attackableLayers;
     public List<GameObject> hitTargets = new List<GameObject>();
@@ -115,25 +118,32 @@ public class PlayerAttack : MonoBehaviour
         if (playerInputs.attacking && canAttack)
         {
             //StartCoroutine(PerformAttack());
-            attackStartTime = Time.time;
+            attackI = 0;
             isAttacking = true;
             canAttack = false;     
         }        
     }
 
     void AttackSequence()
-    {
+    {     
         if(isAttacking)
         {
-            if(Time.time - attackStartTime < attackBuildUpTime / timeManager.customTimeScale)
+            if (attackI < 100f)
+            {
+                attackI += speed * Time.deltaTime;  // Increases at a constant rate
+                Debug.Log("Value: " + attackI);
+            }
+            speed = (100f / attackDuration) * timeManager.customTimeScale;
+
+            if(attackI <= attackBuildUpTime * 100f)
             {
                 AttackBuildUpPhase();
             }
-            else if(Time.time - attackStartTime < (damageDuration + attackBuildUpTime) / timeManager.customTimeScale)
+            else if(attackI <= (damageDuration + attackBuildUpTime) * 100f)
             {
                 AttackDamagePhase();
             }
-            else if(Time.time - attackStartTime < (attackCooldown + damageDuration + attackBuildUpTime) / timeManager.customTimeScale)
+            else if(attackI <= (attackCooldown + damageDuration + attackBuildUpTime) * 100f)
             {
                 AttackCooldownPhase();
             }

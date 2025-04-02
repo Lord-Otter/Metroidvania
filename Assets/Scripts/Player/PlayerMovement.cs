@@ -14,7 +14,6 @@ public class PlayerMovement : MonoBehaviour
     private PlayerVelocity playerVelocity;
     private Transform playerTransform;
     private TimeManager timeManager;
-    private CustomTimeSolution customTimeSolution;
     private CameraBehaviour cameraBehaviour;
     private CapsuleCollider[] capsuleColliders;
     private Collider[] enemyColliders;
@@ -200,7 +199,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else if(playerChecks.AttachedToWallLeft())
             {
-                playerVelocity.velocity.x = maxMoveSpeed * jumpForce * 0.1f;
+                playerVelocity.velocity.x = maxMoveSpeed * jumpForce * 0.1f * timeManager.customTimeScale;
             }
         }
         // Double Jump
