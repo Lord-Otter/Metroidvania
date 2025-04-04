@@ -31,7 +31,7 @@ public class PlayerAnimations : MonoBehaviour
 
     void Update()
     {
-        Animations();
+        //Animations();
     }
 
     // Update is called once per frame
@@ -50,7 +50,7 @@ public class PlayerAnimations : MonoBehaviour
         FaceTravelDirection();
     }
 
-void Animations()
+    /*void Animations()
     {
         float speedParam = Mathf.Abs(playerVelocity.velocity.x) / playerMovement.maxMoveSpeed;
 
@@ -95,10 +95,11 @@ void Animations()
         {
             animator.SetFloat("Speed", 0);
         }
-    }
+    }*/
 
     void FaceTravelDirection()
     {
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, playerChecks.isFacingRight ? 120 : 240, 0), rotationSpeed * Time.fixedDeltaTime);
+        //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, playerChecks.isFacingRight ? 120 : 240, 0), rotationSpeed * Time.fixedDeltaTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, playerChecks.isFacingRight ? 1 : 179, 0), rotationSpeed * Time.fixedDeltaTime);
     }
 }
