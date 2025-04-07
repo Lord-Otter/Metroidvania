@@ -130,10 +130,9 @@ public class PlayerAttack : MonoBehaviour
         {
             if (attackI < 100f)
             {
-                attackI += speed * Time.deltaTime;  // Increases at a constant rate
-                Debug.Log("Value: " + attackI);
+                attackI += speed * Time.deltaTime;
             }
-            speed = (100f / attackDuration) * timeManager.customTimeScale;
+            speed = (100f / attackDuration) * timeManager.timeScale;
 
             if(attackI <= attackBuildUpTime * 100f)
             {
@@ -211,20 +210,20 @@ public class PlayerAttack : MonoBehaviour
 
         canAttack = false;
         //Code to initiate attack animation
-        yield return new WaitForSeconds(attackBuildUpTime / timeManager.customTimeScale); // Time before attack deals damage
+        yield return new WaitForSeconds(attackBuildUpTime / timeManager.timeScale); // Time before attack deals damage
 
         // Attack is now able to damage
         aimStickRenderer.material.color = new Color(0, 1, 0); // Makes attack stick green for visual aid in testing
         Instantiate(swoosh, attackTrigger.transform); // Temporary swoosh sprite
         canAimAttack = false;
         attackTrigger.enabled = true;
-        yield return new WaitForSeconds(damageDuration / timeManager.customTimeScale); // Time before attack no longer deals damage
+        yield return new WaitForSeconds(damageDuration / timeManager.timeScale); // Time before attack no longer deals damage
 
         // Attack can no longer damage
         aimStickRenderer.material.color = new Color(1, 0, 0); // Makes attack stick red for visual aid in testing
         canAimAttack = true;
         attackTrigger.enabled = false;
-        yield return new WaitForSeconds(attackCooldown / timeManager.customTimeScale); // Time before player can attack again
+        yield return new WaitForSeconds(attackCooldown / timeManager.timeScale); // Time before player can attack again
 
         // New attack can now be started
         aimStickRenderer.material.color = new Color(1, 1, 1); // Makes attack stick white for visual aid in testing

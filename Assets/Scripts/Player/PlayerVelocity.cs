@@ -59,31 +59,31 @@ public class PlayerVelocity : MonoBehaviour
 
     public void Physics()
     {
-        velocity = rigidBody.linearVelocity / timeManager.customTimeScale;
+        velocity = rigidBody.linearVelocity / timeManager.timeScale;
 
         if((playerChecks.AttachedToWallRight() || playerChecks.AttachedToWallLeft()) && velocity.y < 0)  
         {
-            velocity.y -= wallSlideGravity * Time.fixedDeltaTime * timeManager.customTimeScale;
+            velocity.y -= wallSlideGravity * Time.fixedDeltaTime * timeManager.timeScale;
             velocity.y = Mathf.Max(velocity.y, -wallSlideMaxSpeed);
         }
         else if (!playerMovement.isDashing && playerInputs.highJumping && velocity.y > 0) 
         {
-            velocity.y -= jumpGravity * Time.fixedDeltaTime * timeManager.customTimeScale;
+            velocity.y -= jumpGravity * Time.fixedDeltaTime * timeManager.timeScale;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
         else if (!playerMovement.isDashing) 
         {
-            velocity.y -= gravity * Time.fixedDeltaTime * timeManager.customTimeScale;
+            velocity.y -= gravity * Time.fixedDeltaTime * timeManager.timeScale;
             velocity.y = Mathf.Max(velocity.y, -maxFallSpeed);
         }
 
         unscaledVelocity = velocity; // Store unscaled velocity
-        rigidBody.linearVelocity = unscaledVelocity * timeManager.customTimeScale; // Apply scaling
+        rigidBody.linearVelocity = unscaledVelocity * timeManager.timeScale; // Apply scaling
     }
 
     public void AdjustVelocityForTimeScale()
     {
-        rigidBody.linearVelocity = unscaledVelocity * timeManager.customTimeScale;
+        rigidBody.linearVelocity = unscaledVelocity * timeManager.timeScale;
     }
 
     void OnPause()
@@ -94,6 +94,6 @@ public class PlayerVelocity : MonoBehaviour
 
     public void OnResume()
     {
-        rigidBody.linearVelocity = pauseVelocity;
+        rigidBody.linearVelocity = pauseVelocity * timeManager.timeScale;
     }
 }

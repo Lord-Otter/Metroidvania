@@ -143,7 +143,7 @@ public class PlayerMovement : MonoBehaviour
         {
             horizontalSpeed = playerInputs.moveHorizontal > 0
                 ? 1
-                : -1;   
+                : -1;
         }
         else
         {
@@ -151,26 +151,26 @@ public class PlayerMovement : MonoBehaviour
         }
 
         float targetSpeed = (playerInputs.movingRight && playerInputs.movingLeft) ? 0 
-            : (playerInputs.movingRight ? maxMoveSpeed * horizontalSpeed * timeManager.customTimeScale 
-            : (playerInputs.movingLeft ? -maxMoveSpeed * -horizontalSpeed * timeManager.customTimeScale
+            : (playerInputs.movingRight ? maxMoveSpeed * horizontalSpeed * timeManager.timeScale 
+            : (playerInputs.movingLeft ? -maxMoveSpeed * -horizontalSpeed * timeManager.timeScale
             : 0));
-        float acceleration = playerChecks.IsGrounded() ? moveAcceleration * timeManager.customTimeScale 
-            : airAcceleration * timeManager.customTimeScale;
+        float acceleration = playerChecks.IsGrounded() ? moveAcceleration * timeManager.timeScale 
+            : airAcceleration * timeManager.timeScale;
 
         if (!isDashing)
         {
             if ((playerInputs.movingLeft || playerInputs.movingRight) && canRun)
             {
-                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, targetSpeed , acceleration * Time.fixedDeltaTime * timeManager.customTimeScale);
+                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, targetSpeed , acceleration * Time.fixedDeltaTime * timeManager.timeScale);
             }
             // Drag 
             else if ((!playerInputs.movingRight && !playerInputs.movingLeft) || (playerInputs.movingRight && playerInputs.movingLeft))
             {
-                float drag = playerChecks.IsGrounded() ? horizontalGroundDrag * timeManager.customTimeScale 
-                : !playerChecks.IsGrounded() && (!playerInputs.movingLeft || !playerInputs.movingRight) ? horizontalAirDrag * timeManager.customTimeScale 
+                float drag = playerChecks.IsGrounded() ? horizontalGroundDrag * timeManager.timeScale 
+                : !playerChecks.IsGrounded() && (!playerInputs.movingLeft || !playerInputs.movingRight) ? horizontalAirDrag * timeManager.timeScale 
                 : 0;
 
-                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, 0, drag * Time.fixedDeltaTime * timeManager.customTimeScale);
+                playerVelocity.velocity.x = Mathf.MoveTowards(playerVelocity.velocity.x, 0, drag * Time.fixedDeltaTime * timeManager.timeScale);
             }
         }
 
@@ -188,25 +188,25 @@ public class PlayerMovement : MonoBehaviour
         // Jumping
         if (playerInputs.jumping)
         {
-            playerVelocity.velocity.y = jumpForce * timeManager.customTimeScale;
+            playerVelocity.velocity.y = jumpForce * timeManager.timeScale;
             playerInputs.jumping = false;
             canJump = false;
             isPogo = false;
 
             if(playerChecks.AttachedToWallRight())
             {
-                playerVelocity.velocity.x = -maxMoveSpeed * jumpForce * 0.1f * timeManager.customTimeScale;
+                playerVelocity.velocity.x = -maxMoveSpeed * jumpForce * 0.1f * timeManager.timeScale;
             }
             else if(playerChecks.AttachedToWallLeft())
             {
-                playerVelocity.velocity.x = maxMoveSpeed * jumpForce * 0.1f * timeManager.customTimeScale;
+                playerVelocity.velocity.x = maxMoveSpeed * jumpForce * 0.1f * timeManager.timeScale;
             }
         }
         // Double Jump
         else if (playerInputs.airJumping)
         {
             airJumps--;
-            playerVelocity.velocity.y = airJumpForce * timeManager.customTimeScale;
+            playerVelocity.velocity.y = airJumpForce * timeManager.timeScale;
             playerInputs.airJumping = false;
             isPogo = false;
         }
@@ -223,13 +223,13 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Jump Canceling
-        if (!playerInputs.highJumping && playerVelocity.velocity.y > -1 * timeManager.customTimeScale)
+        if (!playerInputs.highJumping && playerVelocity.velocity.y > -1 * timeManager.timeScale)
         {
-            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime * Mathf.Pow(timeManager.customTimeScale, 2));
+            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime * Mathf.Pow(timeManager.timeScale, 2));
         }
         else if(isPogo)
         {
-            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime * timeManager.customTimeScale);
+            playerVelocity.velocity.y = Mathf.Max(playerVelocity.velocity.y - jumpCancelForce * Time.fixedDeltaTime * timeManager.timeScale);
         }
 
         if(playerVelocity.velocity.y < 0 && isPogo)
@@ -247,7 +247,7 @@ public class PlayerMovement : MonoBehaviour
         playerVelocity.velocity = playerVelocity.rigidBody.linearVelocity;
 
         playerVelocity.velocity.y = 0;
-        playerVelocity.velocity.y = pogoForce * timeManager.customTimeScale;
+        playerVelocity.velocity.y = pogoForce * timeManager.timeScale;
 
         ResetMovementAbilities();
 
@@ -307,7 +307,7 @@ public class PlayerMovement : MonoBehaviour
 
             if((distanceTraveled >= dashRange) || (dashDirection > 0 && playerChecks.IsTouchingWallRight()) || (dashDirection < 0 && playerChecks.IsTouchingWallLeft()))
             {
-                playerVelocity.velocity.x = dashDirection * maxMoveSpeed * timeManager.customTimeScale;
+                playerVelocity.velocity.x = dashDirection * maxMoveSpeed * timeManager.timeScale;
                 StartCoroutine(DashCooldown());
                 capsuleColliders[0].excludeLayers &= ~LayerMask.GetMask("Enemy");
                 capsuleColliders[1].excludeLayers &= ~LayerMask.GetMask("Enemy");
@@ -316,7 +316,7 @@ public class PlayerMovement : MonoBehaviour
             }
             else
             {
-                playerVelocity.velocity.x = dashDirection * dashSpeed * timeManager.customTimeScale;
+                playerVelocity.velocity.x = dashDirection * dashSpeed * timeManager.timeScale;
             }
         }
 
@@ -352,6 +352,11 @@ public class PlayerMovement : MonoBehaviour
             capsuleColliders[0].enabled = false;
             capsuleColliders[1].enabled = false;
 
+            if(timeManager.timeScaleRecovery != null)
+            {
+                timeManager.timeScale = 1f;
+            }
+
             timeManager.TPPause(true);
         }
 
@@ -376,15 +381,16 @@ public class PlayerMovement : MonoBehaviour
                 timeManager.TPPause(false);
 
                 currentTPSpeed = 0f;
-
-                timeManager.customTimeScale = 0.01f;
+                
+                timeManager.StopTimeScaleRecovery();
+                timeManager.StartTimeScaleRecovery("exp", 2);
                 
                 //TeleportingEnd();
             }
             else
             {
                 // Continue moving toward the target
-                transform.position += direction * currentTPSpeed * Time.fixedDeltaTime * timeManager.customTimeScale;
+                transform.position += direction * currentTPSpeed * Time.fixedDeltaTime * timeManager.timeScale;
             }
         }
 
@@ -430,8 +436,7 @@ public class PlayerMovement : MonoBehaviour
     #region Miscellaneous
     void OnPause()
     {
-        // Dash
-        //dashDuration += Time.deltaTime; // Extend dashDuration while the game is paused
+        
     }
 
     public void ResetMovementAbilities()

@@ -56,8 +56,8 @@ public class CameraBehaviour : MonoBehaviour
 
     public void AdjustVelocityForTimeScale()
     {
-        cinemachineFramingTransposer.m_XDamping = xDamping / timeManager.customTimeScale;
-        cinemachineFramingTransposer.m_YDamping = yDamping / timeManager.customTimeScale;
-        cinemachineFramingTransposer.m_ZDamping = zDamping / timeManager.customTimeScale;
+        cinemachineFramingTransposer.m_XDamping = xDamping / timeManager.timeScale;
+        cinemachineFramingTransposer.m_YDamping = yDamping / timeManager.timeScale;
+        cinemachineFramingTransposer.m_ZDamping = zDamping / timeManager.timeScale;
     }
 }

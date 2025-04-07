@@ -72,12 +72,12 @@ public class ProjectileVelocity : MonoBehaviour
 
     void Traveling()
     {
-        velocity = rigidBody.linearVelocity / timeManager.customTimeScale;
+        velocity = rigidBody.linearVelocity / timeManager.timeScale;
 
         velocity = transform.right * speed;
 
         unscaledVelocity = velocity;
-        rigidBody.linearVelocity = unscaledVelocity * timeManager.customTimeScale;
+        rigidBody.linearVelocity = unscaledVelocity * timeManager.timeScale;
     }
 
     public void ChangeTrajectory(float angle, float angleDiff)
@@ -88,7 +88,7 @@ public class ProjectileVelocity : MonoBehaviour
 
     public void AdjustVelocityForTimeScale()
     {
-        //rigidBody.linearVelocity = unscaledVelocity * timeManager.customTimeScale;
+        //rigidBody.linearVelocity = unscaledVelocity * timeManager.timeScale;
     }
 
     void OnPause()

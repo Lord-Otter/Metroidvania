@@ -5187,7 +5187,7 @@ TrailRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Time: 1
+  m_Time: 30
   m_PreviewTimeScale: 1
   m_Parameters:
     serializedVersion: 3
@@ -8572,8 +8572,8 @@ MonoBehaviour:
   worldPause: 0
   tpPause: 0
   timeScale: 1
-  customTimeScale: 1
-  lastTimeScale: 0
+  unityTimeScale: 1
+  lastUnityTimeScale: 0
 --- !u!4 &1282595033
 Transform:
   m_ObjectHideFlags: 0

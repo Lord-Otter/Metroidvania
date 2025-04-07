@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class TimeManager : MonoBehaviour
@@ -12,8 +13,13 @@ public class TimeManager : MonoBehaviour
 
     [Header("Time Scale")]
     public float timeScale = 1.0f;
-    public float customTimeScale = 1.0f;
-    [HideInInspector]public float lastTimeScale;
+    public float unityTimeScale = 1.0f;
+    [HideInInspector]public float lastUnityTimeScale;
+    [HideInInspector]public Coroutine timeScaleRecovery;
+
+    //[Header("Time Scale Recovery")]
+    //private float duration = 5f;
+    //private float elapsedTime = 0f;
 
     private void Awake()
     {
@@ -26,9 +32,15 @@ public class TimeManager : MonoBehaviour
     void Update()
     {
         CustomTimeScaler();
-        //TimeScale();       
+        UnityTimeScale();
     }
 
+    void FixedUpdate()
+    {
+        
+    }
+
+    #region Time Scale
     void CustomTimeScaler()
     {
         if(Input.GetKeyDown(KeyCode.Alpha1))
@@ -45,24 +57,73 @@ public class TimeManager : MonoBehaviour
         
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            customTimeScale = 0.1f;
+            timeScale = 0.1f;
             TimeScaleChangeUpdate();
-            Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
+            Debug.Log($"Custom time Scale: {timeScale * 100}% ");
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            customTimeScale = 0.5f;
+            timeScale = 0.5f;
             TimeScaleChangeUpdate();
-            Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
+            Debug.Log($"Custom time Scale: {timeScale * 100}% ");
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            customTimeScale = 1;
+            timeScale = 1f;
             TimeScaleChangeUpdate();
-            Debug.Log($"Custom time Scale: {customTimeScale * 100}% ");
+            Debug.Log($"Custom time Scale: {timeScale * 100}% ");
         }
+
+    }
+
+    public void StartTimeScaleRecovery(string curve, float duration)
+    {
+        timeScaleRecovery = StartCoroutine(TimeScaleRecovery(curve, duration));
+    }
+
+    public void StopTimeScaleRecovery()
+    {
+        if(timeScaleRecovery != null)
+        {
+            StopCoroutine(timeScaleRecovery);
+        }
+    }
+
+    IEnumerator TimeScaleRecovery(string curve, float duration)
+    {
+        timeScale = 0.01f;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime; // use unscaled time since timeScale may be 0
+            float t = Mathf.Clamp01(elapsedTime / duration);
+            float value = 0f;
+
+            if (curve == "lin") // Linear
+            {
+                value = t;
+                Debug.Log("Elapsed Time: " + elapsedTime);
+            }
+            else if (curve == "exp") // Exponential
+            {
+                value = t * t;
+                Debug.Log("Elapsed Time: " + elapsedTime);
+            }
+            else if (curve == "log") // Logarithmic
+            {
+                value = Mathf.Log10(1 + 9 * t);
+                Debug.Log("Elapsed Time: " + elapsedTime);
+            }
+
+            timeScale = value;
+            Debug.Log("Time Scale: " + timeScale);
+            yield return null;
+        }
+
+        timeScale = 1f; // ensure it's exactly 1 at the end
     }
 
     public void WorldPause(bool pause)
@@ -105,47 +166,51 @@ public class TimeManager : MonoBehaviour
         projectileVelocity.AdjustVelocityForTimeScale();
         cameraBehaviour.AdjustVelocityForTimeScale();
     }
+    #endregion
 
-    void TimeScale()
+
+    #region Unity Time Scale
+    void UnityTimeScale() // Uses Unity's built in time scaler
     {
-        Time.timeScale = timeScale;
+        Time.timeScale = unityTimeScale;
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Keypad0))
         {
-            if (timeScale == 0)
+            if (unityTimeScale == 0)
             {
-                timeScale = lastTimeScale;
-                Debug.Log($"Time Scale: {timeScale * 100}% ");
+                unityTimeScale = lastUnityTimeScale;
+                Debug.Log($"Unity Time Scale: {timeScale * 100}% ");
             }
             else
             {
-                lastTimeScale = timeScale;
-                timeScale = 0;
-                Debug.Log("Stopping Time");
+                lastUnityTimeScale = timeScale;
+                unityTimeScale = 0;
+                Debug.Log("Stopping Unity Time");
             }
         }
         
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        if (Input.GetKeyDown(KeyCode.Keypad1))
         {
-            timeScale = 0.1f;
-            Debug.Log($"Time Scale: {timeScale * 100}% ");
+            unityTimeScale = 0.1f;
+            Debug.Log($"Unity Time Scale: {unityTimeScale * 100}% ");
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha3))
+        if (Input.GetKeyDown(KeyCode.Keypad2))
         {
-            timeScale = 0.5f;
-            Debug.Log($"Time Scale: {timeScale * 100}% ");
+            unityTimeScale = 0.5f;
+            Debug.Log($"Unity Time Scale: {unityTimeScale * 100}% ");
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha4))
+        if (Input.GetKeyDown(KeyCode.Keypad3))
         {
-            timeScale = 1;
-            Debug.Log($"Time Scale: {timeScale * 100}% ");
+            unityTimeScale = 1;
+            Debug.Log($"Unity Time Scale: {unityTimeScale * 100}% ");
         }
     }
+    #endregion
 
-    public void SetTimeScale(float newTimeScale)
+    /*public void SetTimeScale(float newTimeScale)
     {
         timeScale = newTimeScale;
-    }
+    }*/
 }

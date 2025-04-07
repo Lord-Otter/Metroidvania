@@ -78,13 +78,13 @@ public class CameraTarget : MonoBehaviour
 
                 Vector3 newPosition = transform.localPosition;
 
-                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold * timeManager.customTimeScale)
+                if (Mathf.Abs(playerVelocity.velocity.y) > yOffsetThreshold * timeManager.timeScale)
                 {
                     targetPosition.y += yMovementOffset * playerVelocity.velocity.y * 0.1f;
                 }
 
-                newPosition.x = Mathf.Lerp(newPosition.x, targetPosition.x, Time.fixedDeltaTime / smoothTime * timeManager.customTimeScale);
-                newPosition.y = Mathf.Lerp(newPosition.y, targetPosition.y, Time.fixedDeltaTime / smoothTime * timeManager.customTimeScale);
+                newPosition.x = Mathf.Lerp(newPosition.x, targetPosition.x, Time.fixedDeltaTime / smoothTime * timeManager.timeScale);
+                newPosition.y = Mathf.Lerp(newPosition.y, targetPosition.y, Time.fixedDeltaTime / smoothTime * timeManager.timeScale);
 
                 newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
                 newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);
@@ -102,14 +102,14 @@ public class CameraTarget : MonoBehaviour
                 float targetY = (targetPosition.y * mouseCamMultiplier) + targetPositionY;
                 
                 
-                if (Mathf.Abs(playerVelocity.velocity.y * timeManager.customTimeScale) >= yOffsetThreshold * timeManager.customTimeScale)
+                if (Mathf.Abs(playerVelocity.velocity.y * timeManager.timeScale) >= yOffsetThreshold * timeManager.timeScale)
                 {
                     targetY += yMovementOffset * playerVelocity.velocity.y * 0.3f;
                 }
 
                 
-                newPosition.x = Mathf.Lerp(newPosition.x, targetX, Time.fixedDeltaTime / smoothTime * timeManager.customTimeScale);
-                newPosition.y = Mathf.Lerp(newPosition.y, targetY, Time.fixedDeltaTime / smoothTime * timeManager.customTimeScale);
+                newPosition.x = Mathf.Lerp(newPosition.x, targetX, Time.fixedDeltaTime / smoothTime * timeManager.timeScale);
+                newPosition.y = Mathf.Lerp(newPosition.y, targetY, Time.fixedDeltaTime / smoothTime * timeManager.timeScale);
 
                 newPosition.x = Mathf.Clamp(newPosition.x, -xMax, xMax);
                 newPosition.y = Mathf.Clamp(newPosition.y, -yMax + targetPositionY, yMax + targetPositionY);           
