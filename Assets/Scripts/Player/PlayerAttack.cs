@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
+    #region Declarations
     [Header("References")]
     private PlayerMovement playerMovement;
     private PlayerChecks playerChecks;
@@ -25,8 +26,8 @@ public class PlayerAttack : MonoBehaviour
     public float enemyKnockBack;
     public float playerKnockBack;
     public bool canAttack = true;
-    private bool isAttacking = false;
-    [HideInInspector]public bool canAimAttack = true;
+    [HideInInspector] public bool isAttacking = false;
+    [HideInInspector] public bool canAimAttack = true;
     [SerializeField] private LayerMask attackableLayers;
     public List<GameObject> hitTargets = new List<GameObject>();
 
@@ -61,8 +62,11 @@ public class PlayerAttack : MonoBehaviour
                             202.5f, 225,    // Down left
                             270,            // Down down
                             315, 337.5f };  // Down right
+    #endregion
 
 
+
+    #region Unity Functions
     private void Awake()
     {
         // References
@@ -111,13 +115,15 @@ public class PlayerAttack : MonoBehaviour
     {
         AttackSequence();
     }
+    #endregion
+
+
 
     #region Attacking
     void AttackFunction()
     {
         if (playerInputs.attacking && canAttack)
         {
-            //StartCoroutine(PerformAttack());
             attackI = 0;
             isAttacking = true;
             canAttack = false;     
@@ -128,11 +134,11 @@ public class PlayerAttack : MonoBehaviour
     {     
         if(isAttacking)
         {
+            speed = (100f / attackDuration) * timeManager.timeScale;
             if (attackI < 100f)
             {
                 attackI += speed * Time.deltaTime;
-            }
-            speed = (100f / attackDuration) * timeManager.timeScale;
+            }            
 
             if(attackI <= attackBuildUpTime * 100f)
             {
@@ -149,8 +155,9 @@ public class PlayerAttack : MonoBehaviour
             else
             {
                 AttackEnablingPhase();
-            }
+            }            
         }
+        
     }
 
     void AttackBuildUpPhase()
@@ -195,6 +202,13 @@ public class PlayerAttack : MonoBehaviour
         aimStickRenderer.material.color = new Color(1, 1, 1); // Makes attack stick white for visual aid in testing
         canAttack = true;
         isAttacking = false;
+    }
+
+    public void CancelAttack()
+    {
+        isAttacking = false;
+        AttackCooldownPhase();
+        AttackEnablingPhase();
     }
 
     IEnumerator PerformAttack()

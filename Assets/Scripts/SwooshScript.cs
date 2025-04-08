@@ -7,8 +7,6 @@ public class SwooshScript : MonoBehaviour
     private TimeManager timeManager;
     private PlayerAttack playerAttack;
 
-    public float destroyTime = 0.2f;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -20,7 +18,7 @@ public class SwooshScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(playerAttack.attackI >= (playerAttack.damageDuration + playerAttack.attackBuildUpTime) * 100f)
+        if((playerAttack.attackI >= (playerAttack.damageDuration + playerAttack.attackBuildUpTime) * 100f ) || (!playerAttack.isAttacking))
         {
             Destroy(gameObject);
         }

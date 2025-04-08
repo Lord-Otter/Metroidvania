@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class TimeManager : MonoBehaviour
 {
+    #region Declarations
     [Header("Custom Time Pausing")]
     public GameObject trainingProjectile;
     public ProjectileVelocity projectileVelocity;
@@ -20,7 +21,11 @@ public class TimeManager : MonoBehaviour
     //[Header("Time Scale Recovery")]
     //private float duration = 5f;
     //private float elapsedTime = 0f;
+    #endregion
 
+
+
+    #region Unity Functions
     private void Awake()
     {
         projectileVelocity = trainingProjectile.GetComponent<ProjectileVelocity>();
@@ -39,6 +44,9 @@ public class TimeManager : MonoBehaviour
     {
         
     }
+    #endregion
+
+
 
     #region Time Scale
     void CustomTimeScaler()
@@ -119,11 +127,13 @@ public class TimeManager : MonoBehaviour
             }
 
             timeScale = value;
+            TimeScaleChangeUpdate();
             Debug.Log("Time Scale: " + timeScale);
             yield return null;
         }
 
-        timeScale = 1f; // ensure it's exactly 1 at the end
+        timeScale = 1f;
+        TimeScaleChangeUpdate();
     }
 
     public void WorldPause(bool pause)
@@ -169,6 +179,7 @@ public class TimeManager : MonoBehaviour
     #endregion
 
 
+
     #region Unity Time Scale
     void UnityTimeScale() // Uses Unity's built in time scaler
     {
@@ -208,9 +219,4 @@ public class TimeManager : MonoBehaviour
         }
     }
     #endregion
-
-    /*public void SetTimeScale(float newTimeScale)
-    {
-        timeScale = newTimeScale;
-    }*/
 }

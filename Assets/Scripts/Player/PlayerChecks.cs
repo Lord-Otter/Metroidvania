@@ -59,13 +59,12 @@ public class PlayerChecks : MonoBehaviour
         Vector3 direction = Vector3.down;
         float raycastDistance = 0.55f;
 
-        // Debug Draw the BoxCast
-        DebugDrawBoxCast(origin, halfExtents, direction, raycastDistance, Color.red);
-
         // Perform the BoxCast
         bool hitGround = Physics.BoxCast(origin, halfExtents, direction, 
-                                    out RaycastHit hit, Quaternion.identity, 
-                                    raycastDistance, groundLayer);
+                                        out RaycastHit hit, Quaternion.identity, 
+                                        raycastDistance, groundLayer);
+        // Debug Draw the BoxCast
+        DebugDrawBoxCast(origin, halfExtents, direction, raycastDistance, Color.red);        
 
         if(hitGround)
         {
@@ -288,6 +287,18 @@ public class PlayerChecks : MonoBehaviour
                 isFacingRight = false;
             }
         }
+    }
+    #endregion
+
+
+    #region Miscellaneous
+    public void CancelPlayerActions()
+    {
+        // Dash
+        playerMovement.isDashing = false;
+
+        // Attack
+        playerAttack.CancelAttack();
     }
     #endregion
 }

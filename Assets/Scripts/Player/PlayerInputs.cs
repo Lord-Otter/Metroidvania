@@ -192,7 +192,7 @@ public class PlayerInputs : MonoBehaviour
         : Input.GetButton("ButtonAttack");
 
         // Teleport
-        if(Input.GetButtonDown("Teleport") && playerAttack.teleportProjectile.Count > 0)
+        if((Input.GetButtonDown("Teleport")) && (playerAttack.teleportProjectile.Count > 0) && (playerMovement.tpLimit > 0))
         {
             teleporting = true; // teleporting is set to false in playerMovement.Teleporting()
         }

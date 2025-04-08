@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Cinemachine;
+using TMPro;
 using Unity.Android.Gradle;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    #region Declarations
     private PlayerAttack playerAttack;
     private PlayerChecks playerChecks;
     private PlayerInputs playerInputs;
@@ -16,7 +18,6 @@ public class PlayerMovement : MonoBehaviour
     private TimeManager timeManager;
     private CameraBehaviour cameraBehaviour;
     private CapsuleCollider[] capsuleColliders;
-    private Collider[] enemyColliders;
 
 
     [Header("Run")]
@@ -42,9 +43,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 dashStartPosition;
     private bool dashCooldownReset;
     private bool dashGroundReset;
-    private float dashStartTime;    
+    private float dashEndTime;    
     [HideInInspector]public bool isDashing = false;
-    private float timeWhenPaused;
     private float dashDirection;
     public bool canDash = true;
 
@@ -69,7 +69,11 @@ public class PlayerMovement : MonoBehaviour
     [Header("Drag")]
     public float horizontalGroundDrag = 100f;
     public float horizontalAirDrag = 5f;
+    #endregion
 
+
+
+    #region Unity Functions
     private void Awake()
     {
         playerAttack = GetComponent<PlayerAttack>();
@@ -84,19 +88,10 @@ public class PlayerMovement : MonoBehaviour
         // Teleport
         teleportTarget = GameObject.Find("Teleport_Target");
         finalTeleportTarget = GameObject.Find("Final_Teleport_Target");
-
-        // Collider
-        enemyColliders = GameObject.Find("Training_Dummy").GetComponents<Collider>();
     }
 
     void Start()
     {
-        // Jump
-        airJumps = maxAirJumps;
-
-        // Dash
-        StartCoroutine(DashCooldown());
-
         // Teleport
         tpLimit = tpLimitMax;
     }
@@ -132,6 +127,9 @@ public class PlayerMovement : MonoBehaviour
         // Dash
         Dashing();    
     }
+    #endregion
+
+
 
     #region Run
     public void Movement()
@@ -267,6 +265,14 @@ public class PlayerMovement : MonoBehaviour
             canDash = true;
         }
 
+        if(!canDash)
+        {
+            if((Time.time - dashEndTime >  dashCooldown) && (!isDashing))
+            {
+                dashCooldownReset = true;
+            }
+        }
+
         if (playerInputs.dashing && canDash)
         {
             dashStartPosition = playerTransform.position;
@@ -308,7 +314,7 @@ public class PlayerMovement : MonoBehaviour
             if((distanceTraveled >= dashRange) || (dashDirection > 0 && playerChecks.IsTouchingWallRight()) || (dashDirection < 0 && playerChecks.IsTouchingWallLeft()))
             {
                 playerVelocity.velocity.x = dashDirection * maxMoveSpeed * timeManager.timeScale;
-                StartCoroutine(DashCooldown());
+                dashEndTime = Time.time;
                 capsuleColliders[0].excludeLayers &= ~LayerMask.GetMask("Enemy");
                 capsuleColliders[1].excludeLayers &= ~LayerMask.GetMask("Enemy");
                 dashStartPosition = Vector3.zero;
@@ -321,13 +327,6 @@ public class PlayerMovement : MonoBehaviour
         }
 
         playerVelocity.rigidBody.linearVelocity = playerVelocity.velocity;
-    }
-
-    IEnumerator DashCooldown()
-    {
-        yield return new WaitForSeconds(dashCooldown);
-        dashCooldownReset = true;
-        StopCoroutine(DashCooldown());
     }
     #endregion
 
@@ -342,12 +341,16 @@ public class PlayerMovement : MonoBehaviour
         {
             canTP = false;
             playerInputs.teleporting = false;
-            isTeleporting = true;
+            isTeleporting = true;            
+
+            playerChecks.CancelPlayerActions();
+
             tpStartTime = Time.time;
 
             playerVelocity.velocity = Vector3.zero;
 
-            ResetMovementAbilities();
+            airJumps = maxAirJumps;
+            dashGroundReset = true;
 
             capsuleColliders[0].enabled = false;
             capsuleColliders[1].enabled = false;
@@ -374,6 +377,7 @@ public class PlayerMovement : MonoBehaviour
 
                 isTeleporting = false;
                 canTP = true;
+                tpLimit--;
 
                 capsuleColliders[0].enabled = true;
                 capsuleColliders[1].enabled = true;                
@@ -441,8 +445,14 @@ public class PlayerMovement : MonoBehaviour
 
     public void ResetMovementAbilities()
     {
-        dashGroundReset = true;
-        airJumps = maxAirJumps;
+        if(!dashGroundReset)
+            dashGroundReset = true;
+
+        if(airJumps != maxAirJumps)
+            airJumps = maxAirJumps;
+
+        if(tpLimit != tpLimitMax)
+            tpLimit = tpLimitMax;
     }
     #endregion
 }

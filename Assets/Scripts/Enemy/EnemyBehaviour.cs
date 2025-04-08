@@ -4,15 +4,59 @@ using UnityEngine;
 
 public class EnemyBehaviour : MonoBehaviour
 {
-    // Start is called before the first frame update
+    #region Declarations
+    [Header("References")]
+    private TimeManager timeManager;
+    
+    private enum BehaviourState
+    {
+        Idle,
+        Patrolling,
+        Engaged
+    }
+    private BehaviourState currentState = BehaviourState.Idle;
+    #endregion
+
+
+
+    #region Unity Functions
+    void Awake()
+    {
+        timeManager = GameObject.Find("Time_Manager").GetComponent<TimeManager>();
+    }
+
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         
     }
+    #endregion
+
+
+
+    #region State Machine
+    private void ChangeState(BehaviourState newState)
+    {
+        //StopAllCoroutines();
+        currentState = newState;
+        switch (currentState)
+        {
+            case BehaviourState.Idle:
+            // Code
+                break;
+
+            case BehaviourState.Patrolling:
+            // Code
+                break;
+
+            case BehaviourState.Engaged:
+            // Code
+                break;
+        }
+    }
+    #endregion
 }

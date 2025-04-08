@@ -7288,7 +7288,7 @@ GameObject:
   - component: {fileID: 909581904}
   - component: {fileID: 909581893}
   m_Layer: 9
-  m_Name: Training_Dummy
+  m_Name: Basic Enemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8035,6 +8035,7 @@ MonoBehaviour:
   enemyKnockBack: 0
   playerKnockBack: 0
   canAttack: 1
+  isAttacking: 0
   canAimAttack: 1
   attackableLayers:
     serializedVersion: 2
@@ -8139,7 +8140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groundLayer:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 384
   wallLayer:
     serializedVersion: 2
     m_Bits: 384
