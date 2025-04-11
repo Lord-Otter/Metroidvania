@@ -125,7 +125,7 @@ public class PlayerMovement : MonoBehaviour
         Jumping();
 
         // Dash
-        Dashing();    
+        Dashing();
     }
     #endregion
 
@@ -417,9 +417,6 @@ public class PlayerMovement : MonoBehaviour
 
             isTeleporting = false;
             canTP = true;
-
-            //capsuleColliders[0].enabled = true;
-            //capsuleColliders[1].enabled = true;
 
             timeManager.TPPause(false);
 
